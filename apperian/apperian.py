@@ -70,10 +70,10 @@ class Ease:
         :param password: User’s password
         :return: Boolean
         """
-        if not user: user = self.username
-        if not password: password = self.password
+        if user: self.username = user
+        if password: self.password = password
 
-        payload = json.dumps({'user_id': user, 'password': password})
+        payload = json.dumps({'user_id': self.username, 'password': self.password})
         url = '%s/users/authenticate/' % self.region['Python Web Services']
         r = self.s.post(url, data=payload)
 
@@ -470,10 +470,20 @@ class Publish:
 
         https://help.apperian.com/display/pub/apps.publish
         """
-        pub_data = dict(file_name=file_name, trans_id=Publish.create(self))
-        pub_data['file_id'] = Publish.upload(self, pub_data)
-        Publish.publish(self, metadata, pub_data)
-    #
+        pub_data = dict(file_name=file_name)
+        transaction_id = Publish.create(self)
+        if transaction_id['status'] == 200:
+            pub_data['trans_id'] = transaction_id['result']
+            file_id = Publish.upload(self, pub_data)
+            if file_id['status'] == 200:
+                pub_data['file_id'] = file_id['result']
+                pub = Publish.publish(self, metadata, pub_data)
+                return pub
+            else:
+                return file_id
+        else:
+            return transaction_id
+
     # def update_app(self, app_id):
     #     app_list = Publish.get_list(self)
     #     for k, v in app_list.iteritems():
@@ -488,11 +498,11 @@ class Publish:
         :param password: Admin password
         :return: Boolean
         """
-        if not user: user = self.username
-        if not password: password = self.password
+        if user: self.username = user
+        if password: self.password = password
 
         self.payload['method'] = "com.apperian.eas.user.authenticateuser"
-        self.payload['params'] = {"email": user, "password": password}
+        self.payload['params'] = {"email": self.username, "password": self.password}
 
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         if r.ok:
