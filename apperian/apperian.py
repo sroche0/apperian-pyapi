@@ -54,13 +54,13 @@ def response_check(r, *args):
 
 
 class Ease:
-    def __init__(self, user, pw):
+    def __init__(self, user, pw, region='default'):
         self.username = user
         self.password = pw
         self.region = {}
         self.s = requests.Session()
         self.s.headers.update({"Content-Type": "application/json"})
-        Ease.set_region(self)
+        self.valid = Ease.set_region(self, region)
 
     def auth(self, user=None, password=None):
         """
@@ -100,7 +100,7 @@ class Ease:
                 print "%s is not a valid region. Please make a selection from below:" % region
             self.region = region_options(ENDPOINTS)
 
-        Ease.auth(self)
+        return Ease.auth(self)
 
     def set_default_region(self):
         """
