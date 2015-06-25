@@ -5,6 +5,9 @@ import ast
 import requests
 import sys
 from subprocess import check_output
+import pkgutil
+data = pkgutil.get_data('apperian', 'data/endpoints.json')
+print data
 
 ENDPOINTS = sys.prefix.replace('..', 'apperian_data/endpoints.json')
 
