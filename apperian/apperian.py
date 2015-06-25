@@ -3,15 +3,11 @@ __author__ = 'Shawn Roche'
 import json
 import ast
 import requests
-import sys
 from subprocess import check_output
+import os
 import pkgutil
 
-
 ENDPOINTS = pkgutil.get_data('apperian', 'data/endpoints.json')
-print ENDPOINTS
-
-ENDPOINTS = sys.prefix.replace('..', 'apperian_data/endpoints.json')
 
 
 def region_options(data):
@@ -50,7 +46,7 @@ def response_check(r, *args):
                 message = message['error']['message']
             except KeyError:
                 pass
-    except:
+    except ValueError:
         message = r.text
 
     result['result'] = message
@@ -95,16 +91,14 @@ class Ease:
 
         :param region: Optional. Provide alternate region string. Use region='list' to manually select one
         """
-        with open(ENDPOINTS, 'rb') as f:
-            data = json.load(f)
 
-        key = data.get(region)
+        key = ENDPOINTS.get(region)
         if key:
             self.region = key
         else:
             if region != 'list':
                 print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = region_options(data)
+            self.region = region_options(ENDPOINTS)
 
         Ease.auth(self)
 
@@ -113,19 +107,19 @@ class Ease:
         Allows you to change the default region this module uses without having to manually edit endpoints.json
         If you have never run this function the default region will be North America
         """
-        with open(ENDPOINTS, 'rb') as f:
-            data = json.load(f)
 
         print """
         You are about to change the default region this module uses for all future sessions.
         Make a selection from one of the below regions:
         """
-        data['default'] = region_options(data)
-        self.region = data['default']
+        ENDPOINTS['default'] = region_options(ENDPOINTS)
+        self.region = ENDPOINTS['default']
         Ease.auth(self, self.username, self.password)
 
-        with open(ENDPOINTS, 'wb') as f:
-            f.write(json.dumps(data, indent=4, separators=(',', ': ')))
+        package_dir, package = os.path.split(__file__)
+        data_path = os.path.join(package_dir, 'data', 'endpoints.json')
+        with open(data_path, 'wb') as f:
+            f.write(json.dumps(ENDPOINTS, indent=4, separators=(',', ': ')))
 
     ######################################
     # Org Functions
