@@ -6,7 +6,7 @@ import requests
 import sys
 from subprocess import check_output
 
-ENDPOINTS = sys.prefix.replace('..', 'apperian_data/endpoints.son')
+ENDPOINTS = sys.prefix.replace('..', 'apperian_data/endpoints.json')
 
 
 def region_options(data):
