@@ -3,14 +3,11 @@ __author__ = 'Shawn Roche'
 import json
 import ast
 import requests
-import pkgutil
+import sys
 from subprocess import check_output
 
-
-endpoints = pkgutil.get_data('apperian', 'data/endpoints.json')
-print endpoints
-ENDPOINTS = __file__.split('/')[1:-2]
-ENDPOINTS = '/{}/{}/endpoints.json'.format('/'.join(ENDPOINTS), 'my_data')
+print sys.prefix
+ENDPOINTS = '/{}/{}/endpoints.json'.format(sys.prefix, 'my_data')
 
 
 def region_options(data):
