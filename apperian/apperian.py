@@ -7,7 +7,7 @@ from subprocess import check_output
 import os
 import pkgutil
 
-ENDPOINTS = pkgutil.get_data('apperian', 'data/endpoints.json')
+ENDPOINTS = json.dumps(pkgutil.get_data('apperian', 'data/endpoints.json'))
 
 
 def region_options(data):
