@@ -185,9 +185,9 @@ class Ease:
         result = response_check(r, 'applications')
         if result['status'] == 200:
             app_data = {}
-            for i in result['data']:
+            for i in result['result']:
                 app_data.update({i['psk']: i})
-            result['data'] = app_data
+            result['result'] = app_data
         return result
 
     def app_usage(self, psk, start_date, end_date):
