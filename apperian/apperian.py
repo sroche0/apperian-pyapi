@@ -8,6 +8,7 @@ import os
 import pkgutil
 
 ENDPOINTS = json.dumps(pkgutil.get_data('apperian', 'data/endpoints.json'))
+print ENDPOINTS
 
 
 def region_options(data):
