@@ -183,11 +183,11 @@ class Ease:
         url = '%s/v1/applications/' % self.region['Python Web Services']
         r = self.s.get(url)
         result = response_check(r, 'applications')
-        if result['status'] == 200:
-            app_data = {}
-            for i in result['result']:
-                app_data.update({i['psk']: i})
-            result['result'] = app_data
+        # if result['status'] == 200:
+        #     app_data = {}
+        #     for i in result['result']:
+        #         app_data.update({i['psk']: i})
+        #     result['result'] = app_data
         return result
 
     def app_usage(self, psk, start_date, end_date):
