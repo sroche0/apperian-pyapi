@@ -7,7 +7,7 @@ from subprocess import check_output
 import os
 import pkgutil
 
-ENDPOINTS = json.dumps(pkgutil.get_data('apperian', 'data/endpoints.json'))
+ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'data/endpoints.json'))
 print ENDPOINTS
 
 
