@@ -448,13 +448,15 @@ class Ease:
 
 
 class Publish:
-    def __init__(self, user, pw):
+    def __init__(self, user, pw, region='default'):
         self.token, self.trans_id, self.file_id, self.region = '', '', '', {}
         self.payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
         self.username = user
         self.password = pw
         self.s = requests.Session()
         self.s.headers = {"Content-Type": "application/js"}
+        self.valid = Publish.set_region(self, region)
+
         Publish.set_region(self)
 
     def add_new_app(self, file_name, metadata):
@@ -522,20 +524,15 @@ class Publish:
 
         :param region: Optional. Provide alternate region string. Use region='list' to manually select one
         """
-        with open(ENDPOINTS, 'rb') as f:
-            data = json.load(f)
-
-        key = data.get(region)
+        key = ENDPOINTS.get(region)
         if key:
             self.region = key
-            if region != 'default':
-                print 'Region set to {}'.format(region)
         else:
             if region != 'list':
                 print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = region_options(data)
+            self.region = region_options(ENDPOINTS)
 
-        Publish.auth(self)
+        return Publish.auth(self)
 
     def create(self):
         """
