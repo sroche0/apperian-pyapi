@@ -7,7 +7,7 @@ from subprocess import check_output
 import os
 import pkgutil
 
-ENDPOINTS = pkgutil.get_data('apperian', 'data/endpoints.json')
+ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'data/endpoints.json'))
 
 
 def region_options(data):
@@ -38,7 +38,6 @@ def response_check(r, *args):
             if args:
                 for arg in args:
                     message = message[arg]
-                    print message
         elif r.status_code == 401:
             message = 'auth'
         else:
@@ -54,13 +53,13 @@ def response_check(r, *args):
 
 
 class Ease:
-    def __init__(self, user, pw):
+    def __init__(self, user, pw, region='default'):
         self.username = user
         self.password = pw
         self.region = {}
         self.s = requests.Session()
         self.s.headers.update({"Content-Type": "application/json"})
-        Ease.set_region(self)
+        self.valid = Ease.set_region(self, region)
 
     def auth(self, user=None, password=None):
         """
@@ -100,7 +99,7 @@ class Ease:
                 print "%s is not a valid region. Please make a selection from below:" % region
             self.region = region_options(ENDPOINTS)
 
-        Ease.auth(self)
+        return Ease.auth(self)
 
     def set_default_region(self):
         """
@@ -183,11 +182,11 @@ class Ease:
         url = '%s/v1/applications/' % self.region['Python Web Services']
         r = self.s.get(url)
         result = response_check(r, 'applications')
-        if result['status'] == 200:
-            app_data = {}
-            for i in result['data']:
-                app_data.update({i['psk']: i})
-            result['data'] = app_data
+        # if result['status'] == 200:
+        #     app_data = {}
+        #     for i in result['result']:
+        #         app_data.update({i['psk']: i})
+        #     result['result'] = app_data
         return result
 
     def app_usage(self, psk, start_date, end_date):
@@ -448,13 +447,15 @@ class Ease:
 
 
 class Publish:
-    def __init__(self, user, pw):
+    def __init__(self, user, pw, region='default'):
         self.token, self.trans_id, self.file_id, self.region = '', '', '', {}
         self.payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
         self.username = user
         self.password = pw
         self.s = requests.Session()
         self.s.headers = {"Content-Type": "application/js"}
+        self.valid = Publish.set_region(self, region)
+
         Publish.set_region(self)
 
     def add_new_app(self, file_name, metadata):
@@ -522,20 +523,15 @@ class Publish:
 
         :param region: Optional. Provide alternate region string. Use region='list' to manually select one
         """
-        with open(ENDPOINTS, 'rb') as f:
-            data = json.load(f)
-
-        key = data.get(region)
+        key = ENDPOINTS.get(region)
         if key:
             self.region = key
-            if region != 'default':
-                print 'Region set to {}'.format(region)
         else:
             if region != 'list':
                 print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = region_options(data)
+            self.region = region_options(ENDPOINTS)
 
-        Publish.auth(self)
+        return Publish.auth(self)
 
     def create(self):
         """
