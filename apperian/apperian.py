@@ -38,8 +38,6 @@ def response_check(r, *args):
             if args:
                 for arg in args:
                     message = message[arg]
-        elif r.status_code == 401:
-            message = 'auth'
         else:
             try:
                 message = message['error']['message']
