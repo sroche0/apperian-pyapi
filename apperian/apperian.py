@@ -264,7 +264,7 @@ class Ease:
         :return: returns "ok", "auth", or the error message
         """
         url = '%s/users/%s' % (self.region['Python Web Services'], psk)
-        r = requests.delete(url)
+        r = self.s.delete(url)
         result = response_check(r, 'delete_user_response')
         return result
 
