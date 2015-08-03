@@ -473,6 +473,7 @@ class Publish:
         if transaction_id['status'] == 200:
             pub_data['trans_id'] = transaction_id['result']
             file_id = Publish.upload(self, pub_data)
+            print file_id
             if file_id['status'] == 200:
                 pub_data['file_id'] = file_id['result']
                 pub = Publish.publish(self, metadata, pub_data)
@@ -552,8 +553,8 @@ class Publish:
         print 'Uploading File...\n'
         url = '%s/upload?transactionID=%s' % (self.region['File Uploader'], data['trans_id'])
         upload = ast.literal_eval(check_output(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url]))
-        print
         result['result'] = upload.get('fileID')
+        print result
         if result['result']:
             result['status'] = 200
             print 'Upload Complete'
