@@ -38,8 +38,6 @@ def response_check(r, *args):
             if args:
                 for arg in args:
                     message = message[arg]
-        elif r.status_code == 401:
-            message = 'auth'
         else:
             try:
                 message = message['error']['message']
@@ -266,7 +264,7 @@ class Ease:
         :return: returns "ok", "auth", or the error message
         """
         url = '%s/users/%s' % (self.region['Python Web Services'], psk)
-        r = requests.delete(url)
+        r = self.s.delete(url)
         result = response_check(r, 'delete_user_response')
         return result
 
@@ -550,14 +548,15 @@ class Publish:
         :param data: Dict with the file anme and transaction ID. Dict keys are: file_name, trans_id
         :return: returns fileID for the publish step
         """
+        result = {}
         print 'Uploading File...\n'
         url = '%s/upload?transactionID=%s' % (self.region['File Uploader'], data['trans_id'])
         upload = ast.literal_eval(check_output(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url]))
-        print
-        file_id = upload.get('fileID')
-        if file_id:
+        result['result'] = upload.get('fileID')
+        if result['result']:
+            result['status'] = 200
             print 'Upload Complete'
-            return file_id
+            return result
         else:
             print 'check upload command: curl --form', 'LUuploadFile=@{}'.format(data['file_name']), url
             exit('File Upload Failed')
