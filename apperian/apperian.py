@@ -128,7 +128,7 @@ class Ease:
         :return: returns "ok", "auth", or the error message
         """
         url = '%s/organizations/%s' % (self.region['Python Web Services'], psk)
-        r = self.s.delete(url).json()
+        r = self.s.delete(url)
         result = response_check(r, 'deleted_organization')
         return result
 
