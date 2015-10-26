@@ -595,3 +595,18 @@ class Publish:
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result')
         return result
+
+    def get_credentials(self):
+        url = '{}/v1/credentials/'.format(self.region['Python Web Services'])
+        self.s.headers.update({'X-TOKEN': self.token})
+        r = self.s.get(url)
+        result = response_check(r, 'credentials')
+        return result
+
+    def sign_application(self, app_psk, credentials_psk):
+        url = '{}/v1/applications/{}/credentials/{}'.format(self.region['Python Web Services'],
+                                                            app_psk, credentials_psk)
+        self.s.headers.update({'X-TOKEN': self.token})
+        r = self.s.put(url)
+        result = response_check(r, 'signing_status')
+        return result
