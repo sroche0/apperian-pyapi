@@ -1,11 +1,11 @@
 # coding=utf-8
-__author__ = 'Shawn Roche'
 import json
 import ast
 import requests
 from subprocess import check_output
 import os
 import pkgutil
+__author__ = 'Shawn Roche'
 
 ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'data/endpoints.json'))
 
@@ -68,8 +68,10 @@ class Ease:
         :param password: User’s password
         :return: Boolean
         """
-        if user: self.username = user
-        if password: self.password = password
+        if user:
+            self.username = user
+        if password:
+            self.password = password
 
         payload = json.dumps({'user_id': self.username, 'password': self.password})
         url = '%s/users/authenticate/' % self.region['Python Web Services']
@@ -212,6 +214,19 @@ class Ease:
         url = '%s/v1/applications/%s' % (self.region['Python Web Services'], str(psk))
         r = self.s.get(url)
         result = response_check(r, 'application')
+        return result
+
+    def app_toggle(self, app_psk, state):
+        """
+        Allows you do enable or disable and app in your account.
+
+        :param app_psk: Unique ID of the app. Use the app_list_available() method
+        :param state: Boolean Value of desired state of the app
+        :return: Dict of request status
+        """
+        url = '{}/v1/applications/{}'.format(self.region['Python Web Services'], app_psk)
+        r = self.s.get(url, data={'enabled': state})
+        result = response_check(r, 'update_application_result')
         return result
 
     ######################################
@@ -496,8 +511,10 @@ class Publish:
         :param password: Admin password
         :return: Boolean
         """
-        if user: self.username = user
-        if password: self.password = password
+        if user:
+            self.username = user
+        if password:
+            self.password = password
 
         self.payload['method'] = "com.apperian.eas.user.authenticateuser"
         self.payload['params'] = {"email": self.username, "password": self.password}
