@@ -36,8 +36,11 @@ def response_check(r, *args):
         message = r.json()
         if r.ok:
             if args:
-                for arg in args:
-                    message = message[arg]
+                try:
+                    for arg in args:
+                        message = message[arg]
+                except KeyError:
+                    pass
         else:
             try:
                 message = message['error']['message']
