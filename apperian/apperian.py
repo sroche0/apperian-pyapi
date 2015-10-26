@@ -228,7 +228,7 @@ class Ease:
         :return: Dict of request status
         """
         url = '{}/v1/applications/{}'.format(self.region['Python Web Services'], app_psk)
-        r = self.s.get(url, data={'enabled': state})
+        r = self.s.put(url, data={'enabled': state})
         result = response_check(r, 'update_application_result')
         return result
 
