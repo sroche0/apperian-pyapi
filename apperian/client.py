@@ -588,11 +588,12 @@ class Publish:
         result = response_check(r, 'result')
         return result
 
-    def get_list(self):
+    def get_list(self, credentials=False):
         """
         Lists all of the native apps in the organization you are authenticated to. Does not include webapps, or public
         app store links
 
+        :param credentials:
         :return: List of dicts of app metadata. Dict keys are: ID, author, bundleID, longdescription, shortdescription,
             status, type, version, versionNotes
         """
@@ -617,6 +618,11 @@ class Publish:
         return result
 
     def get_credentials(self):
+        """
+        Lists all stored signing credentials for authenticated user's account
+
+        :return: List of dicts with needed credential info. Each stored credential gets its own dict
+        """
         url = '{}/v1/credentials/'.format(self.region['Python Web Services'])
         self.s.headers.update({'X-TOKEN': self.token})
         r = self.s.get(url)
@@ -624,6 +630,13 @@ class Publish:
         return result
 
     def sign_application(self, app_psk, credentials_psk):
+        """
+        Signs an app with the specified stored credential
+
+        :param app_psk: Unique ID of app in ease. Can be found using list_apps()
+        :param credentials_psk: Unique ID of the credentials to be used. Can be found via get_credentials()
+        :return:
+        """
         url = '{}/v1/applications/{}/credentials/{}'.format(self.region['Python Web Services'],
                                                             app_psk, credentials_psk)
         self.s.headers.update({'X-TOKEN': self.token})
