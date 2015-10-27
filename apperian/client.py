@@ -1,11 +1,11 @@
 # coding=utf-8
-__author__ = 'Shawn Roche'
 import json
 import ast
 import requests
 from subprocess import check_output
 import os
 import pkgutil
+__author__ = 'Shawn Roche'
 
 ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'data/endpoints.json'))
 
@@ -36,8 +36,11 @@ def response_check(r, *args):
         message = r.json()
         if r.ok:
             if args:
-                for arg in args:
-                    message = message[arg]
+                try:
+                    for arg in args:
+                        message = message[arg]
+                except KeyError:
+                    pass
         else:
             try:
                 message = message['error']['message']
@@ -68,8 +71,10 @@ class Ease:
         :param password: User’s password
         :return: Boolean
         """
-        if user: self.username = user
-        if password: self.password = password
+        if user:
+            self.username = user
+        if password:
+            self.password = password
 
         payload = json.dumps({'user_id': self.username, 'password': self.password})
         url = '%s/users/authenticate/' % self.region['Python Web Services']
@@ -212,6 +217,19 @@ class Ease:
         url = '%s/v1/applications/%s' % (self.region['Python Web Services'], str(psk))
         r = self.s.get(url)
         result = response_check(r, 'application')
+        return result
+
+    def app_toggle(self, app_psk, state):
+        """
+        Allows you do enable or disable and app in your account.
+
+        :param app_psk: Unique ID of the app. Use the app_list_available() method
+        :param state: Boolean Value of desired state of the app
+        :return: Dict of request status
+        """
+        url = '{}/v1/applications/{}'.format(self.region['Python Web Services'], app_psk)
+        r = self.s.put(url, data=json.dumps({'enabled': state}))
+        result = response_check(r, 'update_application_result')
         return result
 
     ######################################
@@ -496,8 +514,10 @@ class Publish:
         :param password: Admin password
         :return: Boolean
         """
-        if user: self.username = user
-        if password: self.password = password
+        if user:
+            self.username = user
+        if password:
+            self.password = password
 
         self.payload['method'] = "com.apperian.eas.user.authenticateuser"
         self.payload['params'] = {"email": self.username, "password": self.password}
@@ -568,11 +588,12 @@ class Publish:
         result = response_check(r, 'result')
         return result
 
-    def get_list(self):
+    def get_list(self, credentials=False):
         """
         Lists all of the native apps in the organization you are authenticated to. Does not include webapps, or public
         app store links
 
+        :param credentials:
         :return: List of dicts of app metadata. Dict keys are: ID, author, bundleID, longdescription, shortdescription,
             status, type, version, versionNotes
         """
@@ -594,4 +615,31 @@ class Publish:
         )
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result')
+        return result
+
+    def get_credentials(self):
+        """
+        Lists all stored signing credentials for authenticated user's account
+
+        :return: List of dicts with needed credential info. Each stored credential gets its own dict
+        """
+        url = '{}/v1/credentials/'.format(self.region['Python Web Services'])
+        self.s.headers.update({'X-TOKEN': self.token})
+        r = self.s.get(url)
+        result = response_check(r, 'credentials')
+        return result
+
+    def sign_application(self, app_psk, credentials_psk):
+        """
+        Signs an app with the specified stored credential
+
+        :param app_psk: Unique ID of app in ease. Can be found using list_apps()
+        :param credentials_psk: Unique ID of the credentials to be used. Can be found via get_credentials()
+        :return:
+        """
+        url = '{}/v1/applications/{}/credentials/{}'.format(self.region['Python Web Services'],
+                                                            app_psk, credentials_psk)
+        self.s.headers.update({'X-TOKEN': self.token})
+        r = self.s.put(url)
+        result = response_check(r, 'signing_status')
         return result
