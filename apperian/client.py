@@ -335,22 +335,6 @@ class Ease:
         result = response_check(r, 'group')
         return result
 
-    def group_add_member(self, user_psk, groups):
-        """
-        Adds a specified user to a list of groups. Specify groups by group_psk.
-
-        :param user_psk: Unique ID assigned by EASE to the user you want to add to the list of groups
-        :param groups: Comma-separated list of the group psks
-        :return:Dict of lists. Dict keys are: added_groups, failed_groups
-
-        https://apidocs.apperian.com/v1/groups.html
-        """
-        url = '{}/v1/groups/users/{}'.format(self.region['Python Web Services'], user_psk)
-        payload = json.dumps({"group_psk": groups})
-        r = self.s.get(url, data=payload)
-        result = response_check(r, 'response')
-        return result
-
     def group_list_apps(self, group_psk):
         """
         Returns a list of the applications that are in the specified group.
@@ -361,7 +345,7 @@ class Ease:
         https://apidocs.apperian.com/v1/groups.html
         """
         url = '{}/v1/groups/{}'.format(self.region['Python Web Services'], group_psk)
-        r = self.s.post(url)
+        r = self.s.get(url)
         result = response_check(r, 'applications')
         return result
 
@@ -375,7 +359,7 @@ class Ease:
         """
         url = '{}/v1/groups/{}/applications'.format(self.region['Python Web Services'], group_psk)
         payload = json.dumps({"app_psk": app_list})
-        r = self.s.get(url, data=payload)
+        r = self.s.post(url, data=payload)
         result = response_check(r, 'response')
         return result
 
@@ -405,6 +389,22 @@ class Ease:
         url = '{}/v1/groups/{}/users/'.format(self.region['Python Web Services'], group_psk)
         r = self.s.get(url)
         result = response_check(r, 'users_in_group')
+        return result
+
+    def group_add_member(self, user_psk, groups):
+        """
+        Adds a specified user to a list of groups. Specify groups by group_psk.
+
+        :param user_psk: Unique ID assigned by EASE to the user you want to add to the list of groups
+        :param groups: Comma-separated list of the group psks
+        :return:Dict of lists. Dict keys are: added_groups, failed_groups
+
+        https://apidocs.apperian.com/v1/groups.html
+        """
+        url = '{}/v1/groups/users/{}'.format(self.region['Python Web Services'], user_psk)
+        payload = json.dumps({"group_psk": groups})
+        r = self.s.get(url, data=payload)
+        result = response_check(r, 'response')
         return result
 
     def group_add_members(self, group_psk, user_list):
