@@ -407,6 +407,31 @@ class Ease:
         result = response_check(r, 'response')
         return result
 
+    def group_add_users(self, users, groups):
+        try:
+            user_is_list = users[1]
+        except IndexError:
+            user_is_list = False
+
+        try:
+            group_is_list = groups[0]
+        except IndexError:
+            group_is_list = False
+
+        if group_is_list and user_is_list:
+            result = {'status': 200}
+            for i in groups:
+                resp = Ease.group_add_members(self, users, groups)
+                result[i] = resp['result']
+        elif group_is_list:
+            result = Ease.group_add_member(self, users, groups)
+        elif user_is_list:
+            result = Ease.group_add_members(self, users, groups)
+        else:
+            result = {'status': 500, 'reuslt': 'Incorrect parameters passed'}
+
+        return result
+
     def group_add_members(self, group_psk, user_list):
         """
         Adds a list of users to a specified group. Specify users by user_psk.
@@ -602,15 +627,16 @@ class Publish:
         result = response_check(r, 'result', 'applications')
         return result
 
-    def publish(self, metadata, data):
+    def publish(self, metadata, publishing_data):
         """
-        :param data: Dict of the metadata that is required to upload to ease.
+        :param metadata: Dict of the metadata that is required to upload to ease
+        :param publishing_data: Dict of the params needed to publish
         """
         self.payload['method'] = 'com.apperian.eas.apps.publish'
         self.payload['params'].update(
             {"EASEmetadata": metadata,
-             "files": {"application": data['file_id']},
-             "transactionID": data['trans_id']
+             "files": {"application": publishing_data['file_id']},
+             "transactionID": publishing_data['trans_id']
              }
         )
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
