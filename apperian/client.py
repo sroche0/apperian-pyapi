@@ -421,7 +421,7 @@ class Ease:
         if group_is_list and user_is_list:
             result = {'status': 200}
             for i in groups:
-                resp = Ease.group_add_members(self, users, groups)
+                resp = Ease.group_add_members(self, i, users)
                 result[i] = resp['result']
         elif group_is_list:
             result = Ease.group_add_member(self, users, groups)
