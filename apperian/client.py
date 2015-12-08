@@ -611,17 +611,16 @@ class Publish:
         result = response_check(r, 'result')
         return result
 
-    def get_list(self, credentials=False):
+    def get_list(self):
         """
         Lists all of the native apps in the organization you are authenticated to. Does not include webapps, or public
         app store links
 
-        :param credentials:
         :return: List of dicts of app metadata. Dict keys are: ID, author, bundleID, longdescription, shortdescription,
             status, type, version, versionNotes
         """
         self.payload['method'] = "com.apperian.eas.apps.getlist"
-        r = requests.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'applications')
         return result
 
