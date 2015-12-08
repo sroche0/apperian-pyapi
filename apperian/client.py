@@ -590,7 +590,6 @@ class Publish:
         :return: returns fileID for the publish step
         """
         result = {}
-        print 'Uploading File...\n'
         url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['trans_id'])
         file_id, err = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
                              stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
