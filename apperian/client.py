@@ -34,19 +34,16 @@ def response_check(r, *args):
     result = {'status': r.status_code}
     try:
         message = r.json()
-        if r.ok:
-            if args:
-                try:
-                    for arg in args:
-                        message = message[arg]
-                except KeyError:
-                    pass
-        else:
+        if 'error' in message.keys():
+            message = message['error']
+        elif args:
             try:
-                message = message['error']['message']
+                for arg in args:
+                    message = message[arg]
             except KeyError:
-                pass
+                result['status'] = 500
     except ValueError:
+        result['status'] = 500
         message = r.text
 
     result['result'] = message
@@ -549,7 +546,8 @@ class Publish:
 
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         if r.ok:
-            self.token = r.json().get('result', {}).get('token')
+            token = r.json().get('result', {}).get('token')
+            self.token = token.encode('ascii')
             result = True
         else:
             print 'Authentication Failed.'
