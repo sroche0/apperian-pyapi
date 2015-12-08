@@ -592,13 +592,12 @@ class Publish:
         result = {}
         print 'Uploading File...\n'
         url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['trans_id'])
-        p = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
-                  stdout=PIPE, stdin=PIPE, stderr=PIPE)
-        file_id, err = p.communicate()
-        if not err:
+        file_id, err = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
+                             stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
+        try:
             result['result'] = json.loads(file_id)['fileID']
             result['status'] = 200
-        else:
+        except KeyError:
             result['status'] = err
             result['result'] = [file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)]
 
