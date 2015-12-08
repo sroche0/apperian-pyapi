@@ -1,8 +1,7 @@
 # coding=utf-8
 import json
-import ast
 import requests
-from subprocess import check_output
+from subprocess import Popen, PIPE
 import os
 import pkgutil
 __author__ = 'Shawn Roche'
@@ -592,16 +591,18 @@ class Publish:
         """
         result = {}
         print 'Uploading File...\n'
-        url = '%s/upload?transactionID=%s' % (self.region['File Uploader'], data['trans_id'])
-        upload = ast.literal_eval(check_output(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url]))
-        result['result'] = upload.get('fileID')
-        if result['result']:
+        url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['trans_id'])
+        p = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
+                  stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        file_id, err = p.communicate()
+        if not err:
+            result['result'] = json.loads(file_id)['fileID']
             result['status'] = 200
-            print 'Upload Complete'
-            return result
         else:
-            print 'check upload command: curl --form', 'LUuploadFile=@{}'.format(data['file_name']), url
-            exit('File Upload Failed')
+            result['status'] = err
+            result['result'] = [file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)]
+
+        return result
 
     def update(self, app_id):
         self.payload['method'] = "com.apperian.eas.apps.update"
