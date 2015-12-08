@@ -580,7 +580,7 @@ class Publish:
         :return: Returns transaction ID
         """
         self.payload['method'] = "com.apperian.eas.apps.create"
-        r = requests.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'transactionID')
 
         return result
