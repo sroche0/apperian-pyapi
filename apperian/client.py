@@ -79,7 +79,7 @@ class Ease:
 
         if r.ok:
             self.s.headers.update({'X-TOKEN': r.json()['token']})
-            return True
+            return r.json()['token']
         else:
             return False
 
@@ -548,9 +548,8 @@ class Publish:
         if r.ok:
             token = r.json().get('result', {}).get('token')
             self.token = token.encode('ascii')
-            result = True
+            result = token.encode('ascii')
         else:
-            print 'Authentication Failed.'
             result = False
 
         self.payload["params"] = {"token": self.token}
