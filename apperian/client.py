@@ -1,8 +1,7 @@
 # coding=utf-8
 import json
-import ast
 import requests
-from subprocess import check_output
+from subprocess import Popen, PIPE
 import os
 import pkgutil
 __author__ = 'Shawn Roche'
@@ -79,7 +78,7 @@ class Ease:
 
         if r.ok:
             self.s.headers.update({'X-TOKEN': r.json()['token']})
-            return True
+            return r.json()['token']
         else:
             return False
 
@@ -548,9 +547,8 @@ class Publish:
         if r.ok:
             token = r.json().get('result', {}).get('token')
             self.token = token.encode('ascii')
-            result = True
+            result = token.encode('ascii')
         else:
-            print 'Authentication Failed.'
             result = False
 
         self.payload["params"] = {"token": self.token}
@@ -581,7 +579,7 @@ class Publish:
         :return: Returns transaction ID
         """
         self.payload['method'] = "com.apperian.eas.apps.create"
-        r = requests.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'transactionID')
 
         return result
@@ -592,17 +590,17 @@ class Publish:
         :return: returns fileID for the publish step
         """
         result = {}
-        print 'Uploading File...\n'
-        url = '%s/upload?transactionID=%s' % (self.region['File Uploader'], data['trans_id'])
-        upload = ast.literal_eval(check_output(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url]))
-        result['result'] = upload.get('fileID')
-        if result['result']:
+        url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['trans_id'])
+        file_id, err = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
+                             stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
+        try:
+            result['result'] = json.loads(file_id)['fileID']
             result['status'] = 200
-            print 'Upload Complete'
-            return result
-        else:
-            print 'check upload command: curl --form', 'LUuploadFile=@{}'.format(data['file_name']), url
-            exit('File Upload Failed')
+        except KeyError:
+            result['status'] = err
+            result['result'] = [file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)]
+
+        return result
 
     def update(self, app_id):
         self.payload['method'] = "com.apperian.eas.apps.update"
@@ -611,17 +609,16 @@ class Publish:
         result = response_check(r, 'result')
         return result
 
-    def get_list(self, credentials=False):
+    def get_list(self):
         """
         Lists all of the native apps in the organization you are authenticated to. Does not include webapps, or public
         app store links
 
-        :param credentials:
         :return: List of dicts of app metadata. Dict keys are: ID, author, bundleID, longdescription, shortdescription,
             status, type, version, versionNotes
         """
         self.payload['method'] = "com.apperian.eas.apps.getlist"
-        r = requests.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'applications')
         return result
 
