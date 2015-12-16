@@ -52,7 +52,7 @@
     },
     "qa1":{
         "EASE Admin": "https://qaease.qa.apperian.com",
-        "PHP Web Services": "https://qaeasesvc.qa.apperian.com",
+        "PHP Web Services": "https://qaeasesvc.qa.apperian.com/ease.interface.php",
         "Python Web Services": "https://ws-qaease.qa.apperian.com",
         "File Uploader": "https://qafupload.qa.apperian.com",
         "File Downloader": "https://qafdownload.qa.apperian.com",
