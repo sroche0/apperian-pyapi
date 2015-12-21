@@ -596,7 +596,7 @@ class Publish:
         try:
             result['result'] = json.loads(file_id)['fileID']
             result['status'] = 200
-        except KeyError:
+        except KeyError or ValueError:
             result['status'] = err
             result['result'] = [file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)]
 

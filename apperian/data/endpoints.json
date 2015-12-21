@@ -49,6 +49,15 @@
         "File Uploader": "https://fupload.attmam.com",
         "Python Web Services": "https://attws.attmam.com",
         "Custom HTML5 App Catalogs": "https://*.appcatalog.attmam.com"
+    },
+    "qa1":{
+        "EASE Admin": "https://qaease.qa.apperian.com",
+        "PHP Web Services": "https://qaeasesvc.qa.apperian.com/ease.interface.php",
+        "Python Web Services": "https://ws-qaease.qa.apperian.com",
+        "File Uploader": "https://qafupload.qa.apperian.com",
+        "File Downloader": "https://qafdownload.qa.apperian.com",
+        "Pairing": "https://qapairing.qa.apperian.com",
+        "HTML5 App Catalog": "https://qaappcatalog.qa.apperian.com"
     }
 }
 
