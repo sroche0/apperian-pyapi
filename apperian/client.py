@@ -34,7 +34,6 @@ def response_check(r, *args):
     try:
         message = r.json()
         if 'error' in message.keys():
-            print 'Error:', message['error']
             result['status'] = 401
             message = message['error']
         else:
@@ -548,13 +547,12 @@ class Publish:
 
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'token')
-        print result
         if result.get('result'):
             try:
                 self.token = result['result'].encode('ascii')
                 result = result['result']
-            except:
-                pass
+            except AttributeError:
+                result = False
         else:
             result = False
 
