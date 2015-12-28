@@ -546,7 +546,7 @@ class Publish:
 
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'token')
-        if result['result']['token']:
+        if result.get('result').get('token'):
             self.token = result['result'].encode('ascii')
             result = result['result']['token']
         else:
