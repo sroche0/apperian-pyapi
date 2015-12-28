@@ -498,7 +498,7 @@ class Ease:
 
 
 class Publish:
-    def __init__(self, user, pw, region='default', verbose=False):
+    def __init__(self, user, pw, region='default', verbose=''):
         self.verbose = verbose
         log_level = logging.DEBUG if self.verbose else logging.INFO
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
