@@ -500,17 +500,16 @@ class Ease:
 class Publish:
     def __init__(self, user, pw, region='default', verbose=''):
         self.verbose = verbose
-        log_level = logging.DEBUG if self.verbose else logging.INFO
+        log_level = logging.DEBUG if self.verbose else logging.NOTSET
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
-        self.token, self.trans_id, self.file_id, self.region = '', '', '', {}
+        self.token, self.trans_id, self.file_id = '', '', ''
         self.payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
         self.username = user
         self.password = pw
         self.s = requests.Session()
         self.s.headers = {"Content-Type": "application/js"}
+        self.region = {}
         self.valid = Publish.set_region(self, region)
-
-        Publish.set_region(self)
 
     def add_new_app(self, file_name, metadata):
         """
