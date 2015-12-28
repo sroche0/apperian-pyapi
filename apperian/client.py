@@ -17,12 +17,12 @@ def region_options(data):
 
     while not valid:
         try:
-            choice = int(raw_input('\nEnter number of new default region > '))
+            choice = int(raw_input('\nEnter number of region to use > '))
             if 0 < choice <= len(options):
                 valid = True
                 choice -= 1
             else:
-                print 'Please select a valid option'
+                print 'Please select a valid option between 1 and {}'.format(len(options))
         except ValueError:
             print "Please enter a number."
 
@@ -34,13 +34,15 @@ def response_check(r, *args):
     try:
         message = r.json()
         if 'error' in message.keys():
+            result['status'] = 401
             message = message['error']
-        elif args:
-            try:
-                for arg in args:
-                    message = message[arg]
-            except KeyError:
-                result['status'] = 500
+        else:
+            if args:
+                try:
+                    for arg in args:
+                        message = message[arg]
+                except KeyError:
+                    result['status'] = 500
     except ValueError:
         result['status'] = 500
         message = r.text
@@ -544,10 +546,13 @@ class Publish:
         self.payload['params'] = {"email": self.username, "password": self.password}
 
         r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        if r.ok:
-            token = r.json().get('result', {}).get('token')
-            self.token = token.encode('ascii')
-            result = token.encode('ascii')
+        result = response_check(r, 'result', 'token')
+        if result.get('result'):
+            try:
+                self.token = result['result'].encode('ascii')
+                result = result['result']
+            except AttributeError:
+                result = False
         else:
             result = False
 
