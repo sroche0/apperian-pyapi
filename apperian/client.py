@@ -549,7 +549,7 @@ class Publish:
         result = response_check(r, 'result', 'token')
         if result.get('result'):
             try:
-                self.token = result['result'].encode('ascii')
+                self.token = str(result['result'].encode('ascii'))
                 result = result['result']
             except AttributeError:
                 result = False
