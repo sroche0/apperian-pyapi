@@ -3,6 +3,7 @@ import json
 import requests
 from subprocess import Popen, PIPE
 import os
+import logging
 import pkgutil
 __author__ = 'Shawn Roche'
 
@@ -31,9 +32,12 @@ def region_options(data):
 
 def response_check(r, *args):
     result = {'status': r.status_code}
+    logging.debug('status_code = {}'.format(result['status']))
     try:
         message = r.json()
         if 'error' in message.keys():
+            logging.debug('Error found in response keys:')
+            logging.debug(message)
             result['status'] = 401
             message = message['error']
         else:
@@ -42,17 +46,25 @@ def response_check(r, *args):
                     for arg in args:
                         message = message[arg]
                 except KeyError:
+                    logging.debug('Expected key not present in response')
+                    logging.debug(r.json())
                     result['status'] = 500
     except ValueError:
+        logging.debug('Unable to get json from  response')
+        logging.debug(r.text)
         result['status'] = 500
         message = r.text
 
     result['result'] = message
+    logging.debug(result)
     return result
 
 
 class Ease:
-    def __init__(self, user, pw, region='default'):
+    def __init__(self, user, pw, region='default', verbose=False):
+        self.verbose = verbose
+        log_level = logging.DEBUG if self.verbose else logging.INFO
+        logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
         self.username = user
         self.password = pw
         self.region = {}
@@ -486,16 +498,18 @@ class Ease:
 
 
 class Publish:
-    def __init__(self, user, pw, region='default'):
-        self.token, self.trans_id, self.file_id, self.region = '', '', '', {}
+    def __init__(self, user, pw, region='default', verbose=False):
+        self.verbose = verbose
+        log_level = logging.DEBUG if self.verbose else logging.ERROR
+        logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
+        self.token, self.trans_id, self.file_id = '', '', ''
         self.payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
         self.username = user
         self.password = pw
         self.s = requests.Session()
         self.s.headers = {"Content-Type": "application/js"}
+        self.region = {}
         self.valid = Publish.set_region(self, region)
-
-        Publish.set_region(self)
 
     def add_new_app(self, file_name, metadata):
         """
@@ -549,7 +563,7 @@ class Publish:
         result = response_check(r, 'result', 'token')
         if result.get('result'):
             try:
-                self.token = result['result'].encode('ascii')
+                self.token = str(result['result'].encode('ascii'))
                 result = result['result']
             except AttributeError:
                 result = False
