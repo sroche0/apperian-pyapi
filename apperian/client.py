@@ -34,6 +34,7 @@ def response_check(r, *args):
     try:
         message = r.json()
         if 'error' in message.keys():
+            result['status'] = 401
             message = message['error']
         elif args:
             try:
