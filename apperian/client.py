@@ -500,7 +500,7 @@ class Ease:
 class Publish:
     def __init__(self, user, pw, region='default', verbose=False):
         self.verbose = verbose
-        log_level = logging.DEBUG if self.verbose else logging.NOTSET
+        log_level = logging.DEBUG if self.verbose else logging.ERROR
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
         self.token, self.trans_id, self.file_id = '', '', ''
         self.payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
