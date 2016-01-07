@@ -63,7 +63,7 @@ def response_check(r, *args):
 class Ease:
     def __init__(self, user, pw, region='default', verbose=False):
         self.verbose = verbose
-        log_level = logging.DEBUG if self.verbose else logging.INFO
+        log_level = logging.DEBUG if self.verbose else logging.CRITICAL
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
         self.username = user
         self.password = pw
