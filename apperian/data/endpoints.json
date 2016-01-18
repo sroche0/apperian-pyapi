@@ -1,63 +1,73 @@
 {
-    "default": {
-        "PHP SDK/Old Web Services": "https://appramp.apperian.com",
-        "PHP Web Services": "https://easesvc.apperian.com/ease.interface.php",
-        "HTML5 App Catalog": "https://appcatalog.apperian.com",
-        "Pairing": "https://pairing.apperian.com",
-        "EASE Admin": "https://ease.apperian.com",
-        "File Downloader": "https://fdownload.apperian.com",
-        "File Uploader": "https://fupload.apperian.com",
-        "Python Web Services": "https://na01ws.apperian.com",
-        "Custom HTML5 App Catalogs": "https://*.appcatalog.apperian.com"
-    },
-    "na": {
-        "PHP SDK/Old Web Services": "https://appramp.apperian.com",
-        "PHP Web Services": "https://easesvc.apperian.com/ease.interface.php",
-        "HTML5 App Catalog": "https://appcatalog.apperian.com",
-        "Pairing": "https://pairing.apperian.com",
-        "EASE Admin": "https://ease.apperian.com",
-        "File Downloader": "https://fdownload.apperian.com",
-        "File Uploader": "https://fupload.apperian.com",
-        "Python Web Services": "https://na01ws.apperian.com",
-        "Custom HTML5 App Catalogs": "https://*.appcatalog.apperian.com"
-    },
-    "eu": {
-        "PHP Web Services": "https://easesvc.apperian.eu/ease.interface.php",
-        "HTML5 App Catalog": "https://appcatalog.apperian.eu",
-        "Pairing": "https://pairing.apperian.eu",
-        "EASE Admin": "https://ease.apperian.eu",
-        "File Downloader": "https://fdownload.apperian.eu",
-        "File Uploader": "https://fupload.apperian.eu",
-        "Python Web Services": "https://eu01ws.apperian.eu",
-        "Custom HTML5 App Catalogs": "https://*..appcatalog.apperian.eu"
-    },
-    "swisscom": {
-        "PHP Web Services": "https://swisscomsvc.apperian.eu/ease.interface.php",
-        "Pairing": "https://swisscompairing.apperian.eu",
-        "EASE Admin": "https://swisscommam.apperian.eu",
-        "File Downloader": "https://swisscomdownload.apperian.eu",
-        "File Uploader": "https://swisscomupload.apperian.eu",
-        "Python Web Services": "https://swisscomws.apperian.eu",
-        "HTML5": "https://swisscomcatalog.apperian.eu"
-    },
-    "att": {
-        "PHP Web Services": "https://easesvc.attmam.com/ease.interface.php",
-        "HTML5 App Catalog": "https://appcatalog.attmam.com",
-        "Pairing": "https://pairing.attmam.com",
-        "EASE Admin": "https://ease.attmam.com",
-        "File Downloader": "https://fdownload.attmam.com",
-        "File Uploader": "https://fupload.attmam.com",
-        "Python Web Services": "https://attws.attmam.com",
-        "Custom HTML5 App Catalogs": "https://*.appcatalog.attmam.com"
-    },
-    "qa1":{
-        "EASE Admin": "https://qaease.qa.apperian.com",
-        "PHP Web Services": "https://qaeasesvc.qa.apperian.com/ease.interface.php",
-        "Python Web Services": "https://ws-qaease.qa.apperian.com",
-        "File Uploader": "https://qafupload.qa.apperian.com",
-        "File Downloader": "https://qafdownload.qa.apperian.com",
-        "Pairing": "https://qapairing.qa.apperian.com",
-        "HTML5 App Catalog": "https://qaappcatalog.qa.apperian.com"
-    }
+  "default": {
+    "PHP SDK/Old Web Services": "https://appramp.apperian.com",
+    "PHP Web Services": "https://easesvc.apperian.com/ease.interface.php",
+    "HTML5 App Catalog": "https://appcatalog.apperian.com",
+    "Pairing": "https://pairing.apperian.com",
+    "EASE Admin": "https://ease.apperian.com",
+    "File Downloader": "https://fdownload.apperian.com",
+    "File Uploader": "https://fupload.apperian.com",
+    "Python Web Services": "https://na01ws.apperian.com",
+    "Custom_HTML5": "https://*.appcatalog.apperian.com"
+  },
+  "na": {
+    "PHP SDK/Old Web Services": "https://appramp.apperian.com",
+    "PHP Web Services": "https://easesvc.apperian.com/ease.interface.php",
+    "HTML5 App Catalog": "https://appcatalog.apperian.com",
+    "Pairing": "https://pairing.apperian.com",
+    "EASE Admin": "https://ease.apperian.com",
+    "File Downloader": "https://fdownload.apperian.com",
+    "File Uploader": "https://fupload.apperian.com",
+    "Python Web Services": "https://na01ws.apperian.com",
+    "Custom_HTML5": "https://*.appcatalog.apperian.com"
+  },
+  "eu": {
+    "PHP Web Services": "https://easesvc.apperian.eu/ease.interface.php",
+    "HTML5 App Catalog": "https://appcatalog.apperian.eu",
+    "Pairing": "https://pairing.apperian.eu",
+    "EASE Admin": "https://ease.apperian.eu",
+    "File Downloader": "https://fdownload.apperian.eu",
+    "File Uploader": "https://fupload.apperian.eu",
+    "Python Web Services": "https://eu01ws.apperian.eu",
+    "Custom_HTML5": "https://*..appcatalog.apperian.eu"
+  },
+  "swisscom": {
+    "PHP Web Services": "https://swisscomsvc.apperian.eu/ease.interface.php",
+    "Pairing": "https://swisscompairing.apperian.eu",
+    "EASE Admin": "https://swisscommam.apperian.eu",
+    "File Downloader": "https://swisscomdownload.apperian.eu",
+    "File Uploader": "https://swisscomupload.apperian.eu",
+    "Python Web Services": "https://swisscomws.apperian.eu",
+    "HTML5": "https://swisscomcatalog.apperian.eu"
+  },
+  "att": {
+    "PHP Web Services": "https://easesvc.attmam.com/ease.interface.php",
+    "HTML5 App Catalog": "https://appcatalog.attmam.com",
+    "Pairing": "https://pairing.attmam.com",
+    "EASE Admin": "https://ease.attmam.com",
+    "File Downloader": "https://fdownload.attmam.com",
+    "File Uploader": "https://fupload.attmam.com",
+    "Python Web Services": "https://attws.attmam.com",
+    "Custom_HTML5": "https://*.appcatalog.attmam.com"
+  },
+  "qa1": {
+    "EASE Admin": "https://qaease.qa.apperian.com",
+    "PHP Web Services": "https://qaeasesvc.qa.apperian.com/ease.interface.php",
+    "Python Web Services": "https://ws-qaease.qa.apperian.com",
+    "File Uploader": "https://qafupload.qa.apperian.com",
+    "File Downloader": "https://qafdownload.qa.apperian.com",
+    "Pairing": "https://qapairing.qa.apperian.com",
+    "HTML5": "https://qaappcatalog.qa.apperian.com"
+  },
+  "ca": {
+    "EASE Admin": "https://cats.apperian.eu",
+    "PHP Web Services": "https://cats-svc.apperian.eu/ease.interface.php",
+    "Python Web Services": "https://cats-ws.apperian.eu",
+    "File Uploader": "https://cats-fupload.apperian.eu",
+    "File Downloader": "https://cats-fdownload.apperian.eu",
+    "Pairing": "N/A",
+    "HTML5": "https://cats-appcatalog.apperian.eu",
+    "Custom HTML5": "N/A"
+  }
 }
 
