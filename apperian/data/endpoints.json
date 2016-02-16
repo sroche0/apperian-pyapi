@@ -68,6 +68,15 @@
     "Pairing": "N/A",
     "HTML5": "https://cats-appcatalog.apperian.eu",
     "Custom HTML5": "N/A"
+  },
+  "bt":{
+    "PHP Web Services": "https://btsvc.apperian.eu/ease.interface.php",
+    "Pairing": "https://btpairing.apperian.eu",
+    "EASE Admin": "https://btmam.apperian.eu",
+    "File Downloader": "https://btdownload.apperian.eu",
+    "File Uploader": "https://btupload.apperian.eu",
+    "Python Web Services": "https://btws.apperian.eu",
+    "HTML5": "https://btcatalog.apperian.eu"
   }
 }
 
