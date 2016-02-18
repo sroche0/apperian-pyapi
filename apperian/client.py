@@ -5,59 +5,10 @@ from subprocess import Popen, PIPE
 import os
 import logging
 import pkgutil
+from modules.helpers import region_options, response_check
 __author__ = 'Shawn Roche'
 
-ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'data/endpoints.json'))
-
-
-def region_options(data):
-    options, valid, choice = [], False, ''
-    for key, value in enumerate(data):
-        print "    %s. %s" % (key+1, value)
-        options.append(value)
-
-    while not valid:
-        try:
-            choice = int(raw_input('\nEnter number of region to use > '))
-            if 0 < choice <= len(options):
-                valid = True
-                choice -= 1
-            else:
-                print 'Please select a valid option between 1 and {}'.format(len(options))
-        except ValueError:
-            print "Please enter a number."
-
-    return data[options[choice]]
-
-
-def response_check(r, *args):
-    result = {'status': r.status_code}
-    logging.debug('status_code = {}'.format(result['status']))
-    try:
-        message = r.json()
-        if 'error' in message.keys():
-            logging.debug('Error found in response keys:')
-            logging.debug(message)
-            result['status'] = 401
-            message = message['error']
-        else:
-            if args:
-                try:
-                    for arg in args:
-                        message = message[arg]
-                except KeyError:
-                    logging.debug('Expected key not present in response')
-                    logging.debug(r.json())
-                    result['status'] = 500
-    except ValueError:
-        logging.debug('Unable to get json from  response')
-        logging.debug(r.text)
-        result['status'] = 500
-        message = r.text
-
-    result['result'] = message
-    logging.debug(result)
-    return result
+ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
 
 
 class Ease:
@@ -129,7 +80,7 @@ class Ease:
         Ease.auth(self, self.username, self.password)
 
         package_dir, package = os.path.split(__file__)
-        data_path = os.path.join(package_dir, 'data', 'endpoints.json')
+        data_path = os.path.join(package_dir, 'modules', 'endpoints.json')
         with open(data_path, 'wb') as f:
             f.write(json.dumps(ENDPOINTS, indent=4, separators=(',', ': ')))
 
@@ -153,24 +104,24 @@ class Ease:
 
     def app_list_catalogs(self):
         """
-        List data for all app catalogs
+        List modules for all app catalogs
 
-        :return: Returns data about all the App Catalogs in the authenticated user's organization
+        :return: Returns modules about all the App Catalogs in the authenticated user's organization
         """
         url = '%s/v1/applications/app_catalogs/' % self.region['Python Web Services']
         r = self.s.get(url)
         result = response_check(r, 'app_catalogs')
         if result['status'] == 200:
             app_data = {}
-            for i in result['data']:
+            for i in result['modules']:
                 app_data.update({i['psk']: i})
-            result['data'] = app_data
+            result['modules'] = app_data
         return result
 
     def app_list_available(self):
         """
-        List application data about all the applications available in EASE to the authenticated user. An application is
-        considered available if it is assigned to a group to which the user belongs
+        List application modules about all the applications available in EASE to the authenticated user. An application
+        is considered available if it is assigned to a group to which the user belongs
 
         :return: Dict with key:value pairs of the app psk and it's metadata. For example: {123:{METADATA}}
 
@@ -180,14 +131,14 @@ class Ease:
         result = response_check(r, 'applications')
         if result['status'] == 200:
             app_data = {}
-            for i in result['data']:
+            for i in result['modules']:
                 app_data.update({i['psk']: i})
-            result['data'] = app_data
+            result['modules'] = app_data
         return result
 
     def app_list_all(self):
         """
-        List application data about all the native applications stored in the EASE database for the authenticated
+        List application modules about all the native applications stored in the EASE database for the authenticated
         user’s organization.
 
         :return: Dict with key:value pairs of the app psk and it's metadata. For example: {123:{METADATA}}
@@ -219,7 +170,7 @@ class Ease:
 
     def app_data(self, psk):
         """
-        List data for a specific app
+        List modules for a specific app
 
         :param psk: Unique ID of the app
         :return: Returns dict of metadata about the specified application. Specify the app with app_psk.
@@ -298,7 +249,7 @@ class Ease:
 
     def user_update(self, psk, payload):
         """
-        Updates the following data attributes for a user in your EASE organization: email, password, first_name,
+        Updates the following modules attributes for a user in your EASE organization: email, password, first_name,
         last_name, phone.
 
         When you request this resource, you will need to provide the user_psk value assigned when you added the user.
@@ -472,7 +423,7 @@ class Ease:
 
     def group_update(self, group_psk, data):
         """
-        Updates data for an existing group in the authenticated user's organization.
+        Updates modules for an existing group in the authenticated user's organization.
 
         :param group_psk: Unique ID assigned by EASE to the group.
         :param data: Dict of group metadata to change. Required keys: group_name, group_description
@@ -541,7 +492,7 @@ class Publish:
     #     app_list = Publish.get_list(self)
     #     for k, v in app_list.iteritems():
     #         if i['ID'] ==
-    #     data = {'app_id': app_list[app_id]}
+    #     modules = {'app_id': app_list[app_id]}
     #
     #     pass
 
