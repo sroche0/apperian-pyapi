@@ -1,6 +1,6 @@
 # coding=utf-8
 import json
-from modules.helpers import response_check
+from helpers import response_check
 
 
 class Apps:
