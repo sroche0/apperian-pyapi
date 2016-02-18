@@ -4,8 +4,9 @@ from modules.helpers import response_check
 
 
 class Apps:
-    def __init__(self, session):
-        self.ease = session
+    def __init__(self, session, region):
+        self.session = session
+        self.region = region
         pass
 
     def app_list_catalogs(self):
@@ -14,8 +15,8 @@ class Apps:
 
         :return: Returns modules about all the App Catalogs in the authenticated user's organization
         """
-        url = '%s/v1/applications/app_catalogs/' % self.ease.region['Python Web Services']
-        r = self.ease.s.get(url)
+        url = '%s/v1/applications/app_catalogs/' % self.region['Python Web Services']
+        r = self.session.get(url)
         result = response_check(r, 'app_catalogs')
         if result['status'] == 200:
             app_data = {}
@@ -32,8 +33,8 @@ class Apps:
         :return: Dict with key:value pairs of the app psk and it's metadata. For example: {123:{METADATA}}
 
         """
-        url = '%s/v1/applications/user' % self.ease.region['Python Web Services']
-        r = self.ease.s.get(url)
+        url = '%s/v1/applications/user' % self.region['Python Web Services']
+        r = self.session.get(url)
         result = response_check(r, 'applications')
         if result['status'] == 200:
             app_data = {}
@@ -49,8 +50,8 @@ class Apps:
 
         :return: Dict with key:value pairs of the app psk and it's metadata. For example: {123:{METADATA}}
         """
-        url = '%s/v1/applications/' % self.ease.region['Python Web Services']
-        r = self.ease.s.get(url)
+        url = '%s/v1/applications/' % self.region['Python Web Services']
+        r = self.session.get(url)
         result = response_check(r, 'applications')
         # if result['status'] == 200:
         #     app_data = {}
@@ -69,8 +70,8 @@ class Apps:
         :return:Returns Download Count and Usage Count for an application during a specified statistical time period.
         """
         url = '%s/v1/applications/%s/stats?start_date=%s&end_date=%s' % \
-              (self.ease.region['Python Web Services'], str(psk), start_date, end_date)
-        r = self.ease.s.get(url)
+              (self.region['Python Web Services'], str(psk), start_date, end_date)
+        r = self.session.get(url)
         result = response_check(r, 'app_stats')
         return result
 
@@ -81,8 +82,8 @@ class Apps:
         :param psk: Unique ID of the app
         :return: Returns dict of metadata about the specified application. Specify the app with app_psk.
         """
-        url = '%s/v1/applications/%s' % (self.ease.region['Python Web Services'], str(psk))
-        r = self.ease.s.get(url)
+        url = '%s/v1/applications/%s' % (self.region['Python Web Services'], str(psk))
+        r = self.session.get(url)
         result = response_check(r, 'application')
         return result
 
@@ -94,7 +95,7 @@ class Apps:
         :param state: Boolean Value of desired state of the app
         :return: Dict of request status
         """
-        url = '{}/v1/applications/{}'.format(self.ease.region['Python Web Services'], app_psk)
-        r = self.ease.s.put(url, data=json.dumps({'enabled': state}))
+        url = '{}/v1/applications/{}'.format(self.region['Python Web Services'], app_psk)
+        r = self.session.put(url, data=json.dumps({'enabled': state}))
         result = response_check(r, 'update_application_result')
         return result
