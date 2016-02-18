@@ -22,6 +22,7 @@ class Ease:
         self.username = user
         self.password = pw
         self.region = {}
+        self.user, self.app, self.group = '','',''
         self.s = requests.Session()
         self.s.headers.update({"Content-Type": "application/json"})
         self.valid = Ease.set_region(self, region)
