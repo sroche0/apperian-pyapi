@@ -182,7 +182,7 @@ class Apps:
         Deletes a specific application from your EASE organization
 
         :param psk: Unique ID for the app
-        :return: string 'success' on success, dict of error on failure
+        :return: psk of deleted app on success, dict of error on failure
         """
         url = '{}/{}'.format(self.base, psk)
         r = self.session.delete(url)
