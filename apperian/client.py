@@ -93,7 +93,7 @@ class Ease:
         package_dir, package = os.path.split(__file__)
         data_path = os.path.join(package_dir, 'data', 'endpoints.json')
         with open(data_path, 'wb') as f:
-            f.write(json.dumps(ENDPOINTS, indent=4, separators=(',', ': ')))
+            f.write(json.dumps(ENDPOINTS, indent=2, separators=(',', ': ')))
 
     def connectors(self):
         self.app = applications.Apps(self.s, self.region)
