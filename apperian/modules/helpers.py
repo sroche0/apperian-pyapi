@@ -21,11 +21,11 @@ def region_options(data):
     return data[options[choice]]
 
 
-def response_check(r, *args):
-    result = {'status': r.status_code}
+def response_check(requests_obj, *args):
+    result = {'status': requests_obj.status_code}
     logging.debug('status_code = {}'.format(result['status']))
     try:
-        message = r.json()
+        message = requests_obj.json()
         if 'error' in message.keys():
             logging.debug('Error found in response keys:')
             logging.debug(message)
@@ -38,13 +38,13 @@ def response_check(r, *args):
                         message = message[arg]
                 except KeyError:
                     logging.debug('Expected key not present in response')
-                    logging.debug(r.json())
+                    logging.debug('Keys in response json are: {}'.format(message.keys()))
                     result['status'] = 500
     except ValueError:
         logging.debug('Unable to get json from  response')
-        logging.debug(r.text)
+        logging.debug(requests_obj.text)
         result['status'] = 500
-        message = r.text
+        message = requests_obj.text
 
     result['result'] = message
     logging.debug(result)

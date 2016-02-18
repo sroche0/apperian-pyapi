@@ -9,9 +9,9 @@ from modules import applications, groups, users
 from modules.helpers import region_options, response_check
 __author__ = 'Shawn Roche'
 
-# ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
-with open('endpoints.json', 'rb') as f:
-    ENDPOINTS = json.load(f)
+ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
+# with open('endpoints.json', 'rb') as f:
+#     ENDPOINTS = json.load(f)
 
 
 class Ease:
@@ -43,14 +43,15 @@ class Ease:
         payload = json.dumps({'user_id': self.username, 'password': self.password})
         url = '%s/users/authenticate/' % self.region['Python Web Services']
         if self.verbose:
-            print url
             logging.debug('Sending auth via {}'.format(url))
         r = self.s.post(url, data=payload)
 
-        if r.ok:
-            self.s.headers.update({'X-TOKEN': r.json()['token']})
+        resp = response_check(r, 'token')
+
+        if resp['status'] == 200:
+            self.s.headers.update({'X-TOKEN': resp['result']})
             Ease.connectors(self)
-            return r.json()['token']
+            return resp['result']
         else:
             if self.verbose:
                 logging.debug('Auth failed\n{}'.format(r.text))
