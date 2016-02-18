@@ -81,18 +81,18 @@ setup(
         'test': ['coverage'],
     },
 
-    # If there are data files included in your packages that need to be
+    # If there are modules files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'apperian': ['data/*.json', 'test.txt'],
+        'apperian': ['modules/*.py', 'endpoints.json'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
-    # need to place data files outside of your packages. See:
+    # need to place modules files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    # data_files=[('bin/apperian_data', ['data/endpoints.json'])],
+    # data_files=[('bin/apperian_data', ['modules/endpoints.json'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
