@@ -206,3 +206,18 @@ class Apps:
             choice = display_options(resp['result'], 'credential', 'description')
             resp['result'] = choice['psk']
         return resp
+
+    def sign(self, app_psk, cred_psk):
+        """
+        PUT /applications/<app_psk>/credentials/<credentials_psk>
+        Signs an iOS or Android application using signing credentials that were previously stored in EASE for the
+        authenticated user's organization
+
+        :param app_psk: Unique ID for the App
+        :param cred_psk: Unique ID for the credentials
+        :return: dict of Signing Status
+        """
+        url = '{}/{}/credentials/{}'.format(self.base, app_psk, cred_psk)
+        r = self.session.put(url)
+        result = response_check(r, 'signing_status')
+        return result
