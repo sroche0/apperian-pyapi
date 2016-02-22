@@ -171,7 +171,7 @@ class Apps:
         :param state: Boolean Value of desired state of the app
         :return: Dict of request status
         """
-        url = '{}/v1/applications/{}'.format(self.base, app_psk)
+        url = '{}/{}'.format(self.base, app_psk)
         r = self.session.put(url, data=json.dumps({'enabled': state}))
         resp = response_check(r, 'update_application_resp')
         return resp
@@ -192,15 +192,17 @@ class Apps:
     def get_credentials(self, show=False):
         """
         GET /credentials
-        Returns data about all signing credentials stored in EASE for the authenticated user’s organization
+        Returns data about all signing credentials stored in EASE for the authenticated user’s organization. Optional
+        parameter to select from a list. If used it will return just the psk of the selected credential
 
         :param show: Optional, if set to True, you will select from a list of options
         :return: List of stored credentials for the
         """
-        url = '{}/credentials'.format(self.base)
+        url = '{}credentials'.format(self.base)
+        url = url.replace('applications', '')
         r = self.session.get(url)
         resp = response_check(r, 'credentials')
         if show:
-            choice = display_options(resp['result'], 'credential')
-            resp['result'] = resp['result'][choice]
+            choice = display_options(resp['result'], 'credential', 'description')
+            resp['result'] = choice['psk']
         return resp

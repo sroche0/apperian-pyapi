@@ -2,7 +2,8 @@ import logging
 
 
 def display_options(data, msg, narrow=False):
-    options, valid, choice = [], False, ''
+    valid, choice = False, ''
+    print 'Possible Regions:'
     if narrow:
         try:
             for index, value in enumerate(data):
@@ -17,13 +18,12 @@ def display_options(data, msg, narrow=False):
 
     while not valid:
         try:
-            print
             choice = int(raw_input('\nPlease select the {} you would like to use: '.format(msg)))
-            if 0 < choice <= len(options):
+            if 0 < choice <= len(data):
                 valid = True
                 choice -= 1
             else:
-                print 'Please select a valid option between 1 and {}'.format(len(options))
+                print 'Please select a valid option between 1 and {}'.format(len(data))
         except ValueError:
             print "Please enter a number."
 
