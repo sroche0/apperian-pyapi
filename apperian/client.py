@@ -6,7 +6,7 @@ import os
 import logging
 import pkgutil
 from modules import applications, groups, users
-from modules.helpers import region_options, response_check
+from modules.helpers import display_options, response_check
 __author__ = 'Shawn Roche'
 
 ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
@@ -72,8 +72,8 @@ class Ease:
         else:
             if region != 'list':
                 print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = region_options(ENDPOINTS)
-
+            choice = display_options(ENDPOINTS.keys(), 'region')
+            self.region = ENDPOINTS[choice]
         return Ease.auth(self)
 
     def set_default_region(self):
@@ -84,9 +84,9 @@ class Ease:
 
         print """
         You are about to change the default region this module uses for all future sessions.
-        Make a selection from one of the below regions:
         """
-        ENDPOINTS['default'] = region_options(ENDPOINTS)
+        choice = display_options(ENDPOINTS.keys(), 'region')
+        ENDPOINTS['default'] = ENDPOINTS[choice]
         self.region = ENDPOINTS['default']
         Ease.auth(self, self.username, self.password)
 
@@ -205,7 +205,8 @@ class Publish:
         else:
             if region != 'list':
                 print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = region_options(ENDPOINTS)
+            choice = display_options(ENDPOINTS.keys(), 'region')
+            self.region = ENDPOINTS[choice]
 
         return Publish.auth(self)
 

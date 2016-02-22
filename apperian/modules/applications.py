@@ -1,6 +1,6 @@
 # coding=utf-8
 import json
-from helpers import response_check
+from helpers import response_check, display_options
 
 
 class Apps:
@@ -18,13 +18,13 @@ class Apps:
         """
         url = self.base
         r = self.session.get(url)
-        result = response_check(r, 'applications')
-        # if result['status'] == 200:
+        resp = response_check(r, 'applications')
+        # if resp['status'] == 200:
         #     app_data = {}
-        #     for i in result['result']:
+        #     for i in resp['resp']:
         #         app_data.update({i['psk']: i})
-        #     result['result'] = app_data
-        return result
+        #     resp['resp'] = app_data
+        return resp
 
     def get_details(self, psk):
         """
@@ -36,8 +36,8 @@ class Apps:
         """
         url = '{}/{}'.format(self.base, str(psk))
         r = self.session.get(url)
-        result = response_check(r, 'application')
-        return result
+        resp = response_check(r, 'application')
+        return resp
 
     def add_screenshot(self, psk, form, slot):
         """
@@ -54,8 +54,8 @@ class Apps:
         """
         url = '{}/{}/screenshots/{}/{}'.format(self.base, psk, form, slot)
         r = self.session.post(url)
-        result = response_check(r)
-        return result
+        resp = response_check(r)
+        return resp
 
     def delete_screenshot(self, psk, form, slot):
         """
@@ -73,8 +73,8 @@ class Apps:
         """
         url = '{}/{}/screenshots/{}/{}'.format(self.base, psk, form, slot)
         r = self.session.delete(url)
-        result = response_check(r)
-        return result
+        resp = response_check(r)
+        return resp
 
     def get_media(self, psk):
         """
@@ -86,8 +86,8 @@ class Apps:
         """
         url = '{}/{}/related_media'.format(self.base, str(psk))
         r = self.session.get(url)
-        result = response_check(r, 'related_media')
-        return result
+        resp = response_check(r, 'related_media')
+        return resp
 
     def get_usage(self, psk, start_date, end_date):
         """
@@ -101,8 +101,8 @@ class Apps:
         """
         url = '{}/{}/stats?start_date={}&end_date={}'.format(self.base, psk, start_date, end_date)
         r = self.session.get(url)
-        result = response_check(r, 'app_stats')
-        return result
+        resp = response_check(r, 'app_stats')
+        return resp
 
     def get_versions(self, psk):
         """
@@ -124,13 +124,13 @@ class Apps:
         """
         url = '{}/app_catalogs/'.format(self.base)
         r = self.session.get(url)
-        result = response_check(r, 'app_catalogs')
-        if result['status'] == 200:
+        resp = response_check(r, 'app_catalogs')
+        if resp['status'] == 200:
             app_data = {}
-            for i in result['data']:
+            for i in resp['data']:
                 app_data.update({i['psk']: i})
-            result['data'] = app_data
-        return result
+            resp['data'] = app_data
+        return resp
 
     def list_available(self):
         """
@@ -143,13 +143,13 @@ class Apps:
         """
         url = '{}/user'.format(self.base)
         r = self.session.get(url)
-        result = response_check(r, 'applications')
-        if result['status'] == 200:
+        resp = response_check(r, 'applications')
+        if resp['status'] == 200:
             app_data = {}
-            for i in result['data']:
+            for i in resp['result']:
                 app_data.update({i['psk']: i})
-            result['data'] = app_data
-        return result
+            resp['result'] = app_data
+        return resp
 
     def download(self, psk, path=False):
         """
@@ -173,8 +173,8 @@ class Apps:
         """
         url = '{}/v1/applications/{}'.format(self.base, app_psk)
         r = self.session.put(url, data=json.dumps({'enabled': state}))
-        result = response_check(r, 'update_application_result')
-        return result
+        resp = response_check(r, 'update_application_resp')
+        return resp
 
     def delete(self, psk):
         """
@@ -186,5 +186,21 @@ class Apps:
         """
         url = '{}/{}'.format(self.base, psk)
         r = self.session.delete(url)
-        result = response_check(r, 'deleted_application')
-        return result
+        resp = response_check(r, 'deleted_application')
+        return resp
+
+    def get_credentials(self, show=False):
+        """
+        GET /credentials
+        Returns data about all signing credentials stored in EASE for the authenticated user’s organization
+
+        :param show: Optional, if set to True, you will select from a list of options
+        :return: List of stored credentials for the
+        """
+        url = '{}/credentials'.format(self.base)
+        r = self.session.get(url)
+        resp = response_check(r, 'credentials')
+        if show:
+            choice = display_options(resp['result'], 'credential')
+            resp['result'] = resp['result'][choice]
+        return resp

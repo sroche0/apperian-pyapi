@@ -1,15 +1,24 @@
 import logging
 
 
-def region_options(data):
+def display_options(data, msg, narrow=False):
     options, valid, choice = [], False, ''
-    for key, value in enumerate(data):
-        print "    %s. %s" % (key+1, value)
-        options.append(value)
+    if narrow:
+        try:
+            for index, value in enumerate(data):
+                print "    %s. %s" % (index+1, value[narrow])
+        except KeyError:
+            print 'Passed value is not a key. Select from full list'
+            for index, value in enumerate(data):
+                print "    %s. %s" % (index+1, value)
+    else:
+        for index, value in enumerate(data):
+            print "    %s. %s" % (index+1, value)
 
     while not valid:
         try:
-            choice = int(raw_input('\nEnter number of region to use > '))
+            print
+            choice = int(raw_input('\nPlease select the {} you would like to use: '.format(msg)))
             if 0 < choice <= len(options):
                 valid = True
                 choice -= 1
@@ -18,7 +27,7 @@ def region_options(data):
         except ValueError:
             print "Please enter a number."
 
-    return data[options[choice]]
+    return data[choice]
 
 
 def response_check(requests_obj, *args):
