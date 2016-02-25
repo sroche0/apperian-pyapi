@@ -4,11 +4,11 @@ from helpers import response_check
 
 
 class Publish:
-    def __init__(self, php_session, php_payload, app_client, region):
+    def __init__(self, php_session, php_payload, py_session, region):
         self.token, self.trans_id, self.file_id = '', '', ''
         self.payload = php_payload
-        self.session = php_session
-        self.app = app_client
+        self.php_session = php_session
+        self.py_session = py_session
         self.region = region
 
     def add_new_app(self, file_name, metadata):
@@ -99,7 +99,7 @@ class Publish:
         :return: Returns transaction ID
         """
         self.payload['method'] = "com.apperian.eas.apps.create"
-        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'transactionID')
 
         return result
@@ -125,7 +125,7 @@ class Publish:
     def update(self, app_id):
         self.payload['method'] = "com.apperian.eas.apps.update"
         self.payload['params'].update({'appID': app_id})
-        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result')
         return result
 
@@ -138,7 +138,7 @@ class Publish:
             status, type, version, versionNotes
         """
         self.payload['method'] = "com.apperian.eas.apps.getlist"
-        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'applications')
         return result
 
@@ -154,7 +154,7 @@ class Publish:
              "transactionID": publishing_data['trans_id']
              }
         )
-        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result')
         return result
 
@@ -165,8 +165,7 @@ class Publish:
         :return: List of dicts with needed credential info. Each stored credential gets its own dict
         """
         url = '{}/v1/credentials/'.format(self.region['Python Web Services'])
-        self.session.headers.update({'X-TOKEN': self.token})
-        r = self.session.get(url)
+        r = self.py_session.get(url)
         result = response_check(r, 'credentials')
         return result
 
@@ -180,7 +179,6 @@ class Publish:
         """
         url = '{}/v1/applications/{}/credentials/{}'.format(self.region['Python Web Services'],
                                                             app_psk, credentials_psk)
-        self.session.headers.update({'X-TOKEN': self.token})
-        r = self.session.put(url)
+        r = self.py_session.put(url)
         result = response_check(r, 'signing_status')
         return result
