@@ -104,10 +104,10 @@ class Ease:
             f.write(json.dumps(ENDPOINTS, indent=4, separators=(',', ': ')))
 
     def connectors(self):
-        self.app = applications.Apps(self.py_session, self.region)
+        self.app = applications.Apps(self.py_session, self.php_session, self.php_payload, self.region)
         self.group = groups.Groups(self.py_session, self.region)
         self.user = users.Users(self.py_session, self.region)
-        self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.app, self.region)
+        self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.py_session, self.region)
 
     ######################################
     # Org Functions
@@ -122,4 +122,3 @@ class Ease:
         r = self.py_session.delete(url)
         result = response_check(r, 'deleted_organization')
         return result
-

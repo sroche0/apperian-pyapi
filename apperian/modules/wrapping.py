@@ -5,9 +5,9 @@ from helpers import response_check, php_token
 
 
 class Wrapper:
-    def __init__(self, session, payload, region):
-        self.session = session
-        self.payload = payload
+    def __init__(self, php_session, php_payload, py_session, region):
+        self.session = php_session
+        self.payload = php_payload
         self.region = region
         self.version_psk = ''
         self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
