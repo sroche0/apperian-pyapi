@@ -1,11 +1,13 @@
 # coding=utf-8
 import json
+import publishing
 from helpers import response_check, display_options
 
 
 class Apps:
-    def __init__(self, session, region):
-        self.session = session
+    def __init__(self, py_session, php_session, php_payload, region):
+        self.session = py_session
+        self.publish = publishing.Publish(php_session, php_payload, py_session, region)
         self.base = '{}/v1/applications'.format(region['Python Web Services'])
 
     def list(self):
