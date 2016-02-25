@@ -1,16 +1,15 @@
+import json
+from subprocess import PIPE, Popen
+from helpers import response_check
+
+
 class Publish:
-    def __init__(self, user, pw, region='default', verbose=False):
-        self.verbose = verbose
-        log_level = logging.DEBUG if self.verbose else logging.ERROR
-        logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
+    def __init__(self, php_session, php_payload, app_client, region):
         self.token, self.trans_id, self.file_id = '', '', ''
-        self.payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
-        self.username = user
-        self.password = pw
-        self.s = requests.Session()
-        self.s.headers = {"Content-Type": "application/js"}
-        self.region = {}
-        self.valid = Publish.set_region(self, region)
+        self.payload = php_payload
+        self.session = php_session
+        self.app = app_client
+        self.region = region
 
     def add_new_app(self, file_name, metadata):
         """
@@ -45,53 +44,53 @@ class Publish:
     #     data = {'app_id': app_list[app_id]}
     #
     #     pass
-
-    def auth(self, user=None, password=None):
-        """
-        :param user: Admin username
-        :param password: Admin password
-        :return: Boolean
-        """
-        if user:
-            self.username = user
-        if password:
-            self.password = password
-
-        self.payload['method'] = "com.apperian.eas.user.authenticateuser"
-        self.payload['params'] = {"email": self.username, "password": self.password}
-
-        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result', 'token')
-        if result.get('result'):
-            try:
-                self.token = str(result['result'].encode('ascii'))
-                result = result['result']
-            except AttributeError:
-                result = False
-        else:
-            result = False
-
-        self.payload["params"] = {"token": self.token}
-
-        return result
-
-    def set_region(self, region='default'):
-        """
-        Change the region you access for this session and authenticates you to the new environment.
-        If 'list' is provided as the value for region you will see a list of options to manually choose from.
-
-        :param region: Optional. Provide alternate region string. Use region='list' to manually select one
-        """
-        key = ENDPOINTS.get(region)
-        if key:
-            self.region = key
-        else:
-            if region != 'list':
-                print "%s is not a valid region. Please make a selection from below:" % region
-            choice = display_options(ENDPOINTS.keys(), 'region')
-            self.region = ENDPOINTS[choice]
-
-        return Publish.auth(self)
+    #
+    # def auth(self, user=None, password=None):
+    #     """
+    #     :param user: Admin username
+    #     :param password: Admin password
+    #     :return: Boolean
+    #     """
+    #     if user:
+    #         self.username = user
+    #     if password:
+    #         self.password = password
+    #
+    #     self.payload['method'] = "com.apperian.eas.user.authenticateuser"
+    #     self.payload['params'] = {"email": self.username, "password": self.password}
+    #
+    #     r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+    #     result = response_check(r, 'result', 'token')
+    #     if result.get('result'):
+    #         try:
+    #             self.token = str(result['result'].encode('ascii'))
+    #             result = result['result']
+    #         except AttributeError:
+    #             result = False
+    #     else:
+    #         result = False
+    #
+    #     self.payload["params"] = {"token": self.token}
+    #
+    #     return result
+    #
+    # def set_region(self, region='default'):
+    #     """
+    #     Change the region you access for this session and authenticates you to the new environment.
+    #     If 'list' is provided as the value for region you will see a list of options to manually choose from.
+    #
+    #     :param region: Optional. Provide alternate region string. Use region='list' to manually select one
+    #     """
+    #     key = ENDPOINTS.get(region)
+    #     if key:
+    #         self.region = key
+    #     else:
+    #         if region != 'list':
+    #             print "%s is not a valid region. Please make a selection from below:" % region
+    #         choice = display_options(ENDPOINTS.keys(), 'region')
+    #         self.region = ENDPOINTS[choice]
+    #
+    #     return Publish.auth(self)
 
     def create(self):
         """
@@ -100,7 +99,7 @@ class Publish:
         :return: Returns transaction ID
         """
         self.payload['method'] = "com.apperian.eas.apps.create"
-        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'transactionID')
 
         return result
@@ -126,7 +125,7 @@ class Publish:
     def update(self, app_id):
         self.payload['method'] = "com.apperian.eas.apps.update"
         self.payload['params'].update({'appID': app_id})
-        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result')
         return result
 
@@ -139,7 +138,7 @@ class Publish:
             status, type, version, versionNotes
         """
         self.payload['method'] = "com.apperian.eas.apps.getlist"
-        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result', 'applications')
         return result
 
@@ -155,7 +154,7 @@ class Publish:
              "transactionID": publishing_data['trans_id']
              }
         )
-        r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        r = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
         result = response_check(r, 'result')
         return result
 
@@ -166,8 +165,8 @@ class Publish:
         :return: List of dicts with needed credential info. Each stored credential gets its own dict
         """
         url = '{}/v1/credentials/'.format(self.region['Python Web Services'])
-        self.s.headers.update({'X-TOKEN': self.token})
-        r = self.s.get(url)
+        self.session.headers.update({'X-TOKEN': self.token})
+        r = self.session.get(url)
         result = response_check(r, 'credentials')
         return result
 
@@ -181,7 +180,7 @@ class Publish:
         """
         url = '{}/v1/applications/{}/credentials/{}'.format(self.region['Python Web Services'],
                                                             app_psk, credentials_psk)
-        self.s.headers.update({'X-TOKEN': self.token})
-        r = self.s.put(url)
+        self.session.headers.update({'X-TOKEN': self.token})
+        r = self.session.put(url)
         result = response_check(r, 'signing_status')
         return result
