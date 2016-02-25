@@ -5,7 +5,7 @@ import os
 import logging
 import pkgutil
 from modules import applications, groups, users, wrapping
-from modules.helpers import region_options, response_check
+from modules.helpers import display_options, response_check
 __author__ = 'Shawn Roche'
 
 # ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
@@ -80,7 +80,7 @@ class Ease:
         else:
             if region != 'list':
                 print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = region_options(ENDPOINTS)
+            self.region = display_options(ENDPOINTS, 'region')
 
         return Ease.auth(self)
 
@@ -94,7 +94,7 @@ class Ease:
         You are about to change the default region this module uses for all future sessions.
         Make a selection from one of the below regions:
         """
-        ENDPOINTS['default'] = region_options(ENDPOINTS)
+        ENDPOINTS['default'] = display_options(ENDPOINTS, 'region')
         self.region = ENDPOINTS['default']
         Ease.auth(self, self.username, self.password)
 
@@ -107,7 +107,7 @@ class Ease:
         self.app = applications.Apps(self.py_session, self.region)
         self.group = groups.Groups(self.py_session, self.region)
         self.user = users.Users(self.py_session, self.region)
-        self.wrapper = wrapping.Wrapper(self.php_session, self.app, self.php_payload, self.region)
+        self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.app, self.region)
 
     ######################################
     # Org Functions
