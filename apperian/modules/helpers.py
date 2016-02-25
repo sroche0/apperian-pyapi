@@ -1,5 +1,7 @@
 import logging
 
+php_token = "e(PujgdDx0s3kScfctYqCBug{plur1bus^unum})"
+
 
 def display_options(data, msg, narrow=False):
     valid, choice = False, ''
