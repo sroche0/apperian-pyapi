@@ -1,22 +1,23 @@
 # coding=utf-8
 import json
-import applications
 from helpers import response_check, php_token
 
 
 class Wrapper:
-    def __init__(self, php_session, php_payload, py_session, region):
+    def __init__(self, php_session, php_payload, app_obj, region):
         self.session = php_session
         self.payload = php_payload
+        self.app_obj = app_obj
         self.region = region
-        self.version_psk = ''
         self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
         self.session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': php_token})
         # headers['Content-Type'] = 'application/json'
 
     def wrap_app(self, policies, psk):
+        resp = self.app_obj.get_details(psk)
+        version_psk = resp['result']['version']['psk']
         converted_policies = Wrapper.convert_policies(policies)
-        dynamic_policy_info = Wrapper.gen_dynamic_policy_info(self, converted_policies, psk)
+        dynamic_policy_info = Wrapper.gen_dynamic_policy_info(self, converted_policies, psk, version_psk)
         wrapper_status = Wrapper.get_wrapping_status(self, psk)
         wrapper_version = wrapper_status['apperian_wrapper_info']['wrapper_version']
         params = {
@@ -89,8 +90,8 @@ class Wrapper:
 
         return policy_list
 
-    def gen_dynamic_policy_info(self, policies, app_psk):
-        policy_response = self.session.get('/policies/dynamic/policy/version/{0}'.format(self.version_psk))
+    def gen_dynamic_policy_info(self, policies, app_psk, version_psk):
+        policy_response = self.session.get('/policies/dynamic/policy/version/{0}'.format(version_psk))
 
         policy_name = "MyDynamicPolicy_appPsk{0}".format(app_psk)
 
@@ -426,12 +427,12 @@ class Wrapper:
             else:
                 # Rules were set before, now nothing, therefore delete
                 return_policy_info['action'] = 'delete'
-                return_policy_info['policy_data'] = {'versionpsk': self.version_psk, 'policy_psk': policy_psk}
+                return_policy_info['policy_data'] = {'versionpsk': version_psk, 'policy_psk': policy_psk}
         # if new policy, don't pass any policy_psk as this constitutes a create
         elif new_policy:
             return_policy_info['action'] = 'save'
             return_policy_info['policy_data'] = {'name': policy_name,
-                                                 'versionpsk': self.version_psk,
+                                                 'versionpsk': version_psk,
                                                  'description': policy_description,
                                                  'operationpattern': policy_op_pattern, 'rules': rules}
         # this is updating a policy, we reuse the existing policy_psk, and save all changes
@@ -439,7 +440,7 @@ class Wrapper:
             return_policy_info['action'] = 'save'
             return_policy_info['policy_data'] = {'policy_psk': policy_psk,
                                                  'name': policy_name,
-                                                 'versionpsk': self.version_psk,
+                                                 'versionpsk': version_psk,
                                                  'description': policy_description,
                                                  'operationpattern': policy_op_pattern, 'rules': rules}
         return {'policy_data': return_policy_info}
@@ -475,7 +476,3 @@ class Wrapper:
         resp = self.session.get(self.region['PHP Web Services'], data=json.dumps(self.payload))
         resp = response_check(resp)
         return resp
-
-    def get_version_psk(self, psk):
-
-        resp = self.pysession.get()
