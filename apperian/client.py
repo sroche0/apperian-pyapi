@@ -20,6 +20,7 @@ class Ease:
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
         self.username = user
         self.password = pw
+        self.user_data = {}
         self.region, self.token = {}, ''
         self.user, self.app, self.group, self.wrapper = '', '', '', ''
         # Setup python session
@@ -53,14 +54,15 @@ class Ease:
             logging.debug('Sending auth via {}'.format(url))
         r = self.py_session.post(url, data=payload)
 
-        resp = response_check(r, 'token')
+        resp = response_check(r)
 
         if resp['status'] == 200:
-            self.token = resp['result']
+            self.token = resp['result']['token']
+            self.user_data = resp['result']
             self.py_session.headers.update({'X-TOKEN': self.token})
             self.php_payload["params"] = {"token": self.token}
             Ease.connectors(self)
-            return resp['result']
+            return resp['result']['token']
         else:
             if self.verbose:
                 logging.debug('Auth failed\n{}'.format(r.text))
@@ -107,7 +109,8 @@ class Ease:
         self.app = applications.Apps(self.py_session, self.php_session, self.php_payload, self.region)
         self.group = groups.Groups(self.py_session, self.region)
         self.user = users.Users(self.py_session, self.region)
-        self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.py_session, self.region)
+        self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.app, self.region,
+                                        self.user_data['user']['psk'])
 
     ######################################
     # Org Functions

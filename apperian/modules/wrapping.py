@@ -4,9 +4,10 @@ from helpers import response_check, php_token
 
 
 class Wrapper:
-    def __init__(self, php_session, php_payload, app_obj, region):
+    def __init__(self, php_session, php_payload, app_obj, region, user_psk):
         self.session = php_session
         self.payload = php_payload
+        self.user_psk = user_psk
         self.app_obj = app_obj
         self.region = region
         self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
@@ -24,11 +25,14 @@ class Wrapper:
             'appPsk': psk,
             'data': converted_policies,
             'dynamicPolicyInfo': dynamic_policy_info,
-            'apperianWrapperVersion': wrapper_version
+            'apperianWrapperVersion': wrapper_version,
+            'userPsk': self.user_psk,
+            'pythonAuthToken': self.payload['params']['token']
         }
-        # params['userPsk'] = web_svc.user_data['user']['psk']
         # params['pythonAuthToken'] = web_svc.auth_token
-        self.payload['params'] = json.dumps(params)
+        self.payload['params'].update(params)
+
+        return self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
 
     @staticmethod
     def convert_policies(policies):
@@ -91,7 +95,11 @@ class Wrapper:
         return policy_list
 
     def gen_dynamic_policy_info(self, policies, app_psk, version_psk):
-        policy_response = self.session.get('/policies/dynamic/policy/version/{0}'.format(version_psk))
+        r = self.session.get('{}/policies/dynamic/policy/version/{}'.format(
+            self.region['PHP Web Services'], version_psk))
+        policy_response = response_check(r)
+        if policy_response['status'] == 200:
+            policy_response = policy_response['result']
 
         policy_name = "MyDynamicPolicy_appPsk{0}".format(app_psk)
 
@@ -416,7 +424,7 @@ class Wrapper:
 
         try:
             policy_psk = policy_response.get('policies')[0].get('psk')
-        except IndexError:
+        except (IndexError, TypeError):
             policy_psk = None
 
         if len(rules) == 0:
@@ -471,8 +479,8 @@ class Wrapper:
         """
 
         self.payload['method'] = 'com.apperian.eas.apps.getversionstatus'
-        self.payload['params'] = {'appPsk': app_psk}
+        self.payload['params'].update({'appPsk': app_psk})
 
-        resp = self.session.get(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        resp = response_check(resp)
-        return resp
+        resp = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        resp = response_check(resp, 'result')
+        return resp['result']
