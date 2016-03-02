@@ -1,24 +1,35 @@
 import logging
 
+php_token = "e(PujgdDx0s3kScfctYqCBug{plur1bus^unum})"
 
-def region_options(data):
-    options, valid, choice = [], False, ''
-    for key, value in enumerate(data):
-        print "    %s. %s" % (key+1, value)
-        options.append(value)
+
+def display_options(data, msg, narrow=False):
+    valid, choice = False, ''
+    print 'Possible Regions:'
+    if narrow:
+        try:
+            for index, value in enumerate(data):
+                print "    %s. %s" % (index+1, value[narrow])
+        except KeyError:
+            print 'Passed value is not a key. Select from full list'
+            for index, value in enumerate(data):
+                print "    %s. %s" % (index+1, value)
+    else:
+        for index, value in enumerate(data):
+            print "    %s. %s" % (index+1, value)
 
     while not valid:
         try:
-            choice = int(raw_input('\nEnter number of region to use > '))
-            if 0 < choice <= len(options):
+            choice = int(raw_input('\nPlease select the {} you would like to use: '.format(msg)))
+            if 0 < choice <= len(data):
                 valid = True
                 choice -= 1
             else:
-                print 'Please select a valid option between 1 and {}'.format(len(options))
+                print 'Please select a valid option between 1 and {}'.format(len(data))
         except ValueError:
             print "Please enter a number."
 
-    return data[options[choice]]
+    return data[choice]
 
 
 def response_check(requests_obj, *args):
