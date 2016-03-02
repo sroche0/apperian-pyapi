@@ -8,9 +8,9 @@ from modules import applications, groups, users, wrapping
 from modules.helpers import display_options, response_check
 __author__ = 'Shawn Roche'
 
-# ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
-with open('endpoints.json', 'rb') as f:
-    ENDPOINTS = json.load(f)
+ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
+# with open('endpoints.json', 'rb') as f:
+#     ENDPOINTS = json.load(f)
 
 
 class Ease:
