@@ -465,7 +465,7 @@ class Wrapper:
             policy_op_pattern += '"' + rules[i]['name'] + '"'
         return policy_op_pattern
 
-    def get_wrapping_status(self, app_psk):
+    def get_status(self, app_psk):
         """
         :param app_psk:
         :return:

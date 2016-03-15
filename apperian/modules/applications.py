@@ -223,3 +223,10 @@ class Apps:
         r = self.session.put(url)
         result = response_check(r, 'signing_status')
         return result
+
+    def update(self, app_psk, file_name):
+        pass
+
+    def upload(self, data):
+        pass
+

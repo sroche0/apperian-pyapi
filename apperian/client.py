@@ -4,7 +4,7 @@ import requests
 import os
 import logging
 import pkgutil
-from modules import applications, groups, users, wrapping
+from modules import applications, groups, users, wrapping, publishing
 from modules.helpers import display_options, response_check
 __author__ = 'Shawn Roche'
 
@@ -22,7 +22,7 @@ class Ease:
         self.password = pw
         self.user_data = {}
         self.region, self.token = {}, ''
-        self.user, self.app, self.group, self.wrapper = '', '', '', ''
+        self.user, self.app, self.group, self.wrapper, self.publish = '', '', '', '', ''
         # Setup python session
         self.py_session = requests.Session()
         self.py_session.headers.update({"Content-Type": "application/json"})
@@ -111,6 +111,7 @@ class Ease:
         self.user = users.Users(self.py_session, self.region)
         self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.app, self.region,
                                         self.user_data['user']['psk'])
+        self.publish = publishing.Publish(self.php_session, self.php_payload, self.py_session, self.region)
 
     ######################################
     # Org Functions
