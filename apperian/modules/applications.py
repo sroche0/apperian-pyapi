@@ -225,8 +225,21 @@ class Apps:
         return result
 
     def update(self, app_psk, file_name):
+        """
+        :param app_psk:
+        :param file_name:
+        :return:
+        """
         pass
 
-    def upload(self, data):
-        pass
+    def upload(self, file_path, metadata):
+        """
+        :param file_path: path to the file to upload on local disk
+        :param metadata: required metadata for upload
+        :return:
+        """
+        upload_status = self.publish.add_new_app(file_path, metadata)
+        return upload_status
+
+
 
