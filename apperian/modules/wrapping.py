@@ -19,7 +19,7 @@ class Wrapper:
         version_psk = resp['result']['version']['psk']
         converted_policies = Wrapper.convert_policies(policies)
         dynamic_policy_info = Wrapper.gen_dynamic_policy_info(self, converted_policies, psk, version_psk)
-        wrapper_status = Wrapper.get_wrapping_status(self, psk)
+        wrapper_status = Wrapper.get_status(self, psk)
         wrapper_version = wrapper_status['apperian_wrapper_info']['wrapper_version']
         params = {
             'appPsk': psk,
