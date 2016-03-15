@@ -76,13 +76,16 @@ class Ease:
         :param region: Optional. Provide alternate region string. Use region='list' to manually select one
         """
 
-        key = ENDPOINTS.get(region)
+        key = ENDPOINTS.get(region.lower())
         if key:
             self.region = key
         else:
-            if region != 'list':
-                print "%s is not a valid region. Please make a selection from below:" % region
-            self.region = display_options(ENDPOINTS, 'region')
+            if ',' in region:
+                self.region['PHP Web Services'], self.region['Python Web Services'] = region.split(',')
+            else:
+                if region != 'list':
+                    print "%s is not a valid format. Please make a selection from below:" % region
+                self.region = display_options(ENDPOINTS, 'region')
 
         return Ease.auth(self)
 
