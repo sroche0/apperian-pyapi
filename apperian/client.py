@@ -81,7 +81,9 @@ class Ease:
             self.region = key
         else:
             if ',' in region:
-                self.region['PHP Web Services'], self.region['Python Web Services'] = region.split(',')
+                php, python = region.split(',')
+                self.region['PHP Web Services'] = '{}/ease.interface.php'.format(php)
+                self.region['Python Web Services'] = python
             else:
                 if region != 'list':
                     print "%s is not a valid format. Please make a selection from below:" % region
