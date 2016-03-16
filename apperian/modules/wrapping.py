@@ -10,7 +10,6 @@ class Wrapper:
         self.user_psk = user_psk
         self.app_obj = app_obj
         self.region = region
-        self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
         self.session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': php_token})
         # headers['Content-Type'] = 'application/json'
 
@@ -20,6 +19,7 @@ class Wrapper:
         converted_policies = Wrapper.convert_policies(policies)
         dynamic_policy_info = Wrapper.gen_dynamic_policy_info(self, converted_policies, psk, version_psk)
         wrapper_status = Wrapper.get_status(self, psk)
+        print wrapper_status
         wrapper_version = wrapper_status['apperian_wrapper_info']['wrapper_version']
         params = {
             'appPsk': psk,
@@ -31,6 +31,7 @@ class Wrapper:
         }
         # params['pythonAuthToken'] = web_svc.auth_token
         self.payload['params'].update(params)
+        self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
 
         return self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
 
