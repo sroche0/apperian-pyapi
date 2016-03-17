@@ -1,6 +1,7 @@
 # coding=utf-8
 import json
 import publishing
+import sys
 from helpers import response_check, display_options
 
 
@@ -153,16 +154,57 @@ class Apps:
             resp['result'] = app_data
         return resp
 
-    def download(self, psk, path=False):
+    def download(self, psk, file_name=False, status=False):
         """
         GET /downloads/direct/applications/<app_id>
         Download the Application's Binary File
 
         :param psk: Unique ID of the app. Returned by list() or get_details() as "direct_download_binary_url"
-        :param path: Path to save file to. If not passed, file will save in CWD with default filename
+        :param file_name: Path to save file to. If not passed, file will save in CWD with default filename
+        :param status: Boolean that controls whether or not the download shows a status bar
         :return: True False for download success/
         """
-        pass
+        app_details = Apps.get_details(self, psk)
+        if not file_name:
+            if app_details['operating_system'] == 1:
+                file_name = '{}.ipa'.format(app_details['psk'])
+            elif app_details['operating_system'] in [102, 103, 104, 105]:
+                file_name = '{}.apk'.format(app_details['psk'])
+            elif app_details['operating_system'] in [205, 206, 207]:
+                file_name = '{}.zip'.format(app_details['psk'])
+            elif app_details['operating_system'] == 401:
+                file_name = '{}.xap'.format(app_details['psk'])
+
+        dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True).url
+        dl = self.session.get(dl_url, stream=True)
+
+        file_size = int(dl.headers["content-length"])
+        file_size_dl = 0
+        last = 0
+        if status:
+            print '-' * (len(file_name) + 24)
+            print file_name, '   '
+
+        with open('{}.apk'.format(file_name, 'wb')) as f:
+            for chunk in dl.iter_content(4096):
+                f.write(chunk)
+                if status:
+                    file_size_dl += 4096
+                    dl_status = int(float(file_size_dl) / float(file_size) * 100)
+                    if dl_status % 5 == 0:
+                        if dl_status != last:
+                            sys.stdout.write('#')
+                            sys.stdout.flush()
+                            last = int(dl_status)
+            print
+
+        result = {'status': dl.status_code}
+        if dl.status_code == 200:
+            result['result'] = file_name
+        else:
+            result['result'] = 'Failed'
+
+        return result
 
     def toggle(self, app_psk, state):
         """
