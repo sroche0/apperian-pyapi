@@ -420,9 +420,12 @@ class Wrapper:
             # If com.apperian.application.version is undefined, this is an older version of the wrapper which doesn't
             # have the version_psk baked in. Therefore, we use what the system has. If the app has the version psk
             # baked in, always use that because it's always accurate.
-            operation_pattern = "((typeof(facts['com.apperian.application.version']) === 'undefined' \
-                                && facts['com.apperian.apps.installedversion'] !== -1 && facts['com.apperian.apps.latestversion'] > facts['com.apperian.apps.installedversion'])\
-                                || (facts['com.apperian.apps.latestversion'] > facts['com.apperian.application.version']))"
+            operation_pattern = "((typeof(facts['com.apperian.application.version']) === 'undefined' && " \
+                                "facts['com.apperian.apps.installedversion'] !== -1 && " \
+                                "facts['com.apperian.apps.latestversion'] > " \
+                                "facts['com.apperian.apps.installedversion']) || " \
+                                "(facts['com.apperian.apps.latestversion'] > " \
+                                "facts['com.apperian.application.version']))"
             actions_fail = [{"id": '{0}keepcalmandcarryon.lol'.format(action_prefix), "params": ''}]
             actions_success = [{"id": '{0}update'.format(action_prefix), "params": ''}]
             versioncontrol_rule = {"name": rule_names['versioncontrol'], "operationpattern": operation_pattern,
