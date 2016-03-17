@@ -1,5 +1,7 @@
 # coding=utf-8
 import json
+import time
+import datetime
 from helpers import response_check, php_token
 
 
@@ -32,8 +34,37 @@ class Wrapper:
         # params['pythonAuthToken'] = web_svc.auth_token
         self.payload['params'].update(params)
         self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
+        self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
 
-        return self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        message = {
+            -1: "Error applying policies",
+            0: "Wrapping completed, no policies applied",
+            1: "Policies applied",
+            2: "Wrapping in progress...",
+            3: "Wrapping completed, pending signing",
+            4: "Wrapping completed, no policies applied"}
+
+        done_wrapping = False
+
+        while not done_wrapping:
+            wrap_status_result = Wrapper.get_status(self, psk)
+            ts = time.time()
+            st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+            if wrap_status_result['ver_status'] in [1, 2]:
+                pass
+            elif wrap_status_result['ver_status'] in [3, 4]:
+                done_wrapping = True
+            else:
+                break
+
+            print("{0}: {1}".format(st, message[wrap_status_result['ver_status']]))
+            if not done_wrapping:
+                time.sleep(10)
+
+        if done_wrapping:
+            return {'status': 200, 'result': message[wrap_status_result['ver_status']]}
+        else:
+            return {'status': 500, 'result': message[wrap_status_result['ver_status']]}
 
     @staticmethod
     def convert_policies(policies):
