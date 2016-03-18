@@ -166,14 +166,15 @@ class Apps:
         """
         app_details = Apps.get_details(self, psk)['result']
         if not file_name:
+            file_name = app_details['name'].replace(' ', '_')
             if app_details['operating_system'] == 1:
-                file_name = '{}.ipa'.format(app_details['name'].replace(' ', '_'))
+                file_name += '.ipa'
             elif app_details['operating_system'] in [102, 103, 104, 105]:
-                file_name = '{}.apk'.format(app_details['name'].replace(' ', '_'))
+                file_name += '.apk'
             elif app_details['operating_system'] in [205, 206, 207]:
-                file_name = '{}.zip'.format(app_details['name'].replace(' ', '_'))
+                file_name += '.zip'
             elif app_details['operating_system'] == 401:
-                file_name = '{}.xap'.format(app_details['name'].replace(' ', '_'))
+                file_name += '.xap'
 
         dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True)
         dl = self.session.get(dl_url.url, stream=True)
