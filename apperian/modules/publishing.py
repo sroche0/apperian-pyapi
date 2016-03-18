@@ -1,4 +1,5 @@
 import json
+import logging
 from subprocess import PIPE, Popen
 from helpers import response_check
 
@@ -116,8 +117,9 @@ class Publish:
         try:
             result['result'] = json.loads(file_id)['fileID']
             result['status'] = 200
-        except KeyError or ValueError:
-            result['status'] = err
+        except (KeyError, ValueError):
+            result['status'] = 500
+            logging.debug([file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)])
             result['result'] = [file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)]
 
         return result
