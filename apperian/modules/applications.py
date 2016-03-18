@@ -185,7 +185,7 @@ class Apps:
             print '-' * (len(file_name) + 24)
             print file_name, '   '
 
-        with open('{}.apk'.format(file_name, 'wb')) as f:
+        with open(file_name, 'wb') as f:
             for chunk in dl.iter_content(4096):
                 f.write(chunk)
                 if status:
