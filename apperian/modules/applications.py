@@ -219,7 +219,7 @@ class Apps:
         """
         url = '{}/{}'.format(self.base, app_psk)
         r = self.session.put(url, data=json.dumps({'enabled': state}))
-        resp = response_check(r, 'update_application_resp')
+        resp = response_check(r, 'update_application_result')
         return resp
 
     def delete(self, psk):
