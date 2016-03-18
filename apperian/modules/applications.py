@@ -164,7 +164,7 @@ class Apps:
         :param status: Boolean that controls whether or not the download shows a status bar
         :return: True False for download success/
         """
-        app_details = Apps.get_details(self, psk)
+        app_details = Apps.get_details(self, psk)['result']
         if not file_name:
             if app_details['operating_system'] == 1:
                 file_name = '{}.ipa'.format(app_details['psk'])
