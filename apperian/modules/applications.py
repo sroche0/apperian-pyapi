@@ -154,7 +154,7 @@ class Apps:
             resp['result'] = app_data
         return resp
 
-    def download(self, psk, file_name=False, status=False):
+    def download(self, psk, file_name=False):
         """
         GET /downloads/direct/applications/<app_id>
         Download the Application's Binary File
@@ -167,13 +167,13 @@ class Apps:
         app_details = Apps.get_details(self, psk)['result']
         if not file_name:
             if app_details['operating_system'] == 1:
-                file_name = '{}.ipa'.format(app_details['psk'])
+                file_name = '{}.ipa'.format(app_details['name'].replace(' ', '_'))
             elif app_details['operating_system'] in [102, 103, 104, 105]:
-                file_name = '{}.apk'.format(app_details['psk'])
+                file_name = '{}.apk'.format(app_details['name'].replace(' ', '_'))
             elif app_details['operating_system'] in [205, 206, 207]:
-                file_name = '{}.zip'.format(app_details['psk'])
+                file_name = '{}.zip'.format(app_details['name'].replace(' ', '_'))
             elif app_details['operating_system'] == 401:
-                file_name = '{}.xap'.format(app_details['psk'])
+                file_name = '{}.xap'.format(app_details['name'].replace(' ', '_'))
 
         dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True)
         dl = self.session.get(dl_url.url, stream=True)
