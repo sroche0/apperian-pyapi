@@ -157,7 +157,7 @@ class Publish:
              }
         )
         r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result')
+        result = response_check(r, 'result', 'appID')
         return result
 
     def get_credentials(self):
