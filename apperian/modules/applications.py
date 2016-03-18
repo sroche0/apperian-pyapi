@@ -175,28 +175,29 @@ class Apps:
             elif app_details['operating_system'] == 401:
                 file_name = '{}.xap'.format(app_details['psk'])
 
-        dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True).url
-        dl = self.session.get(dl_url, stream=True)
+        dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True)
+        dl = self.session.get(dl_url.url, stream=True)
+        # Removed the status bar for now as it seems our fdownload server does not return anything about file size
+        # prior to actually downloading the file
 
-        file_size = int(dl.headers["content-length"])
-        file_size_dl = 0
-        last = 0
-        if status:
-            print '-' * (len(file_name) + 24)
-            print file_name, '   '
+        # if status:
+        #     file_size = int(dl.headers["content-length"])
+        #     file_size_dl = 0
+        #     last = 0
+        #     print '-' * (len(file_name) + 24)
+        #     print file_name, '   '
 
         with open(file_name, 'wb') as f:
             for chunk in dl.iter_content(4096):
                 f.write(chunk)
-                if status:
-                    file_size_dl += 4096
-                    dl_status = int(float(file_size_dl) / float(file_size) * 100)
-                    if dl_status % 5 == 0:
-                        if dl_status != last:
-                            sys.stdout.write('#')
-                            sys.stdout.flush()
-                            last = int(dl_status)
-            print
+                # if status:
+                #     file_size_dl += 4096
+                #     dl_status = int(float(file_size_dl) / float(file_size) * 100)
+                #     if dl_status % 5 == 0:
+                #         if dl_status != last:
+                #             sys.stdout.write('#')
+                #             sys.stdout.flush()
+                #             last = int(dl_status)
 
         result = {'status': dl.status_code}
         if dl.status_code == 200:
