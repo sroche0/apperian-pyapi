@@ -14,19 +14,21 @@ ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
 
 
 class Ease:
-    def __init__(self, user, pw, region='default', verbose=False):
+    def __init__(self, user, pw, region='default', verbose=False, php=None, py=None):
         self.verbose = verbose
         log_level = logging.DEBUG if self.verbose else logging.CRITICAL
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
         self.username = user
         self.password = pw
         self.user_data = {}
-        self.region, self.token = {}, ''
+        self.region, self.token = region, ''
         self.user, self.app, self.group, self.wrapper, self.publish = '', '', '', '', ''
         # Setup python session
+        self.py = py
         self.py_session = requests.Session()
         self.py_session.headers.update({"Content-Type": "application/json"})
         # Setup php session
+        self.php = php
         self.php_session = requests.Session()
         self.php_session.headers = {"Content-Type": "application/js"}
         self.php_payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
@@ -68,7 +70,7 @@ class Ease:
                 logging.debug('Auth failed\n{}'.format(r.text))
             return False
 
-    def set_region(self, region='default'):
+    def set_region(self, region):
         """
         Change the region you access for this session and authenticates you to the new environment.
         If 'list' is provided as the value for region you will see a list of options to manually choose from.
@@ -76,14 +78,15 @@ class Ease:
         :param region: Optional. Provide alternate region string. Use region='list' to manually select one
         """
 
-        key = ENDPOINTS.get(region.lower())
-        if key:
-            self.region = key
+        if self.php and self.py:
+            self.region = {
+                'PHP Web Services': 'https://{}/ease.interface.php'.format(self.php),
+                'Python Web Services': 'https://{}/'.format(self.py)
+            }
         else:
-            if ',' in region:
-                php, python = region.split(',')
-                self.region['PHP Web Services'] = '{}/ease.interface.php'.format(php)
-                self.region['Python Web Services'] = python
+            key = ENDPOINTS.get(region.lower())
+            if key:
+                self.region = key
             else:
                 if region != 'list':
                     print "%s is not a valid format. Please make a selection from below:" % region
