@@ -15,7 +15,7 @@ class Wrapper:
         self.session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': php_token})
         # headers['Content-Type'] = 'application/json'
 
-    def wrap_app(self, policies, psk):
+    def wrap_app(self, psk, policies):
         resp = self.app_obj.get_details(psk)
         version_psk = resp['result']['version']['psk']
         converted_policies = Wrapper.convert_policies(policies)
