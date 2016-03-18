@@ -81,8 +81,8 @@ class Ease:
         if self.php and self.py:
             self.region = {
                 'PHP Web Services': 'https://{}/ease.interface.php'.format(self.php),
-                'Python Web Services': 'https://{}/'.format(self.py),
-                'File Uploader': 'https://{}/'.format(self.php.replace('easesvc', 'fupload'))
+                'Python Web Services': 'https://{}'.format(self.py),
+                'File Uploader': 'https://{}'.format(self.php.replace('easesvc', 'fupload'))
             }
         else:
             key = ENDPOINTS.get(region.lower())
