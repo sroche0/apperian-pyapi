@@ -6,7 +6,7 @@ from helpers import response_check
 
 class Publish:
     def __init__(self, php_session, php_payload, py_session, region):
-        self.token, self.trans_id, self.file_id = '', '', ''
+        self.token, self.transactionID, self.file_id = '', '', ''
         self.payload = php_payload
         self.php_session = php_session
         self.py_session = py_session
@@ -27,7 +27,7 @@ class Publish:
         pub_data = dict(file_name=file_name)
         transaction_id = Publish.create(self)
         if transaction_id['status'] == 200:
-            pub_data['trans_id'] = transaction_id['result']
+            pub_data['transactionID'] = transaction_id['result']
             file_id = Publish.upload(self, pub_data)
             if file_id['status'] == 200:
                 pub_data['file_id'] = file_id['result']
@@ -52,11 +52,11 @@ class Publish:
 
     def upload(self, data):
         """
-        :param data: Dict with the file anme and transaction ID. Dict keys are: file_name, trans_id
+        :param data: Dict with the file anme and transaction ID. Dict keys are: file_name, transactionID
         :return: returns fileID for the publish step
         """
         result = {}
-        url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['trans_id'])
+        url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['transactionID'])
         file_id, err = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
                              stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
         try:
@@ -98,7 +98,7 @@ class Publish:
         self.payload['params'].update(
             {"EASEmetadata": metadata,
              "files": {"application": publishing_data['file_id']},
-             "transactionID": publishing_data['trans_id']
+             "transactionID": publishing_data['transactionID']
              }
         )
         r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
