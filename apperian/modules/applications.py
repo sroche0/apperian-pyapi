@@ -275,10 +275,15 @@ class Apps:
         :return:
         """
         current_data = self.publish.update(app_psk)
+        if current_data['status'] != 200:
+            return current_data
         data = current_data['result']
-        data['trans_id'] = data['transactionID']
 
         if file_name:
+            transaction_id = data.get('transactionID')
+            if not transaction_id:
+                return data
+            data['file_name'] = file_name
             file_id = self.publish.upload(data)
             if file_id['status'] == 200:
                 data['file_id'] = file_id['result']
