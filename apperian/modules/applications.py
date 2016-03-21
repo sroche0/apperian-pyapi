@@ -276,6 +276,7 @@ class Apps:
         """
         current_data = self.publish.update(app_psk)
         data = current_data['result']
+        data['trans_id'] = data['transactionID']
 
         if file_name:
             file_id = self.publish.upload(data)
