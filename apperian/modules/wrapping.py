@@ -15,13 +15,12 @@ class Wrapper:
         self.session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': php_token})
         # headers['Content-Type'] = 'application/json'
 
-    def wrap_app(self, psk, policies):
+    def wrap_app(self, psk, policies, async=False):
         resp = self.app_obj.get_details(psk)
         version_psk = resp['result']['version']['psk']
         converted_policies = Wrapper.convert_policies(policies)
         dynamic_policy_info = Wrapper.gen_dynamic_policy_info(self, converted_policies, psk, version_psk)
         wrapper_status = Wrapper.get_status(self, psk)
-        print wrapper_status
         wrapper_version = wrapper_status['apperian_wrapper_info']['wrapper_version']
         params = {
             'appPsk': psk,
@@ -45,21 +44,27 @@ class Wrapper:
             4: "Wrapping completed, no policies applied"}
 
         done_wrapping = False
-
         while not done_wrapping:
-            wrap_status_result = Wrapper.get_status(self, psk)
-            ts = time.time()
-            st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-            if wrap_status_result['ver_status'] in [1, 2]:
-                pass
-            elif wrap_status_result['ver_status'] in [3, 4]:
-                done_wrapping = True
+            if async:
+                wrap_status_result = Wrapper.get_status(self, psk)
+                if wrap_status_result['ver_status'] is not 0:
+                    done_wrapping = True
+                else:
+                    break
             else:
-                break
+                wrap_status_result = Wrapper.get_status(self, psk)
+                ts = time.time()
+                st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+                if wrap_status_result['ver_status'] in [1, 2]:
+                    pass
+                elif wrap_status_result['ver_status'] in [3, 4]:
+                    done_wrapping = True
+                else:
+                    break
 
-            print("{0}: {1}".format(st, message[wrap_status_result['ver_status']]))
-            if not done_wrapping:
-                time.sleep(10)
+                print("{0}: {1}".format(st, message[wrap_status_result['ver_status']]))
+                if not done_wrapping:
+                    time.sleep(10)
 
         if done_wrapping:
             return {'status': 200, 'result': message[wrap_status_result['ver_status']]}
