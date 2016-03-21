@@ -1,7 +1,6 @@
 # coding=utf-8
 import json
 import publishing
-import sys
 from helpers import response_check, display_options
 
 
@@ -154,7 +153,7 @@ class Apps:
             resp['result'] = app_data
         return resp
 
-    def download(self, psk, file_name=False):
+    def download(self, psk, file_name=False, status=False):
         """
         GET /downloads/direct/applications/<app_id>
         Download the Application's Binary File
@@ -268,13 +267,26 @@ class Apps:
         result = response_check(r, 'signing_status')
         return result
 
-    def update(self, app_psk, file_name):
+    def update(self, app_psk, metadata, file_name=False):
         """
         :param app_psk:
+        :param metadata
         :param file_name:
         :return:
         """
-        pass
+        current_data = self.publish.update(app_psk)
+        data = current_data['result']
+
+        if file_name:
+            file_id = self.publish.upload(data)
+            if file_id['status'] == 200:
+                data['file_id'] = file_id['result']
+            else:
+                return file_id
+        if not metadata:
+            metadata = data['EASEmetadata']
+        pub = self.publish.publish(metadata, data)
+        return pub
 
     def upload(self, file_path, metadata):
         """
@@ -284,6 +296,3 @@ class Apps:
         """
         upload_status = self.publish.add_new_app(file_path, metadata)
         return upload_status
-
-
-
