@@ -57,7 +57,7 @@ class Wrapper:
                 ts = time.time()
                 st = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
                 if wrap_status_result['ver_status'] in [1, 2]:
-                    print("{0}: {1}".format(st, message[wrap_status_result['ver_status']]))
+                    print("{0} - {1}".format(st, message[wrap_status_result['ver_status']]))
                 elif wrap_status_result['ver_status'] in [3, -1]:
                     done_wrapping = True
                 else:
