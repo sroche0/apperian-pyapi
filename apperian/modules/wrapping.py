@@ -44,32 +44,52 @@ class Wrapper:
             4: "Wrapping completed, no policies applied"}
 
         done_wrapping = False
-        while not done_wrapping:
+        count = 1
+        while not done_wrapping and count < 3:
             if async:
                 wrap_status_result = Wrapper.get_status(self, psk)
-                if wrap_status_result['ver_status'] is not 0:
+                if wrap_status_result['ver_status'] not in [0, 4]:
                     done_wrapping = True
                 else:
                     break
             else:
                 wrap_status_result = Wrapper.get_status(self, psk)
                 ts = time.time()
-                st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+                st = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
                 if wrap_status_result['ver_status'] in [1, 2]:
-                    pass
-                elif wrap_status_result['ver_status'] in [3, 4]:
+                    print("{0}: {1}".format(st, message[wrap_status_result['ver_status']]))
+                elif wrap_status_result['ver_status'] in [3, -1]:
                     done_wrapping = True
                 else:
-                    break
+                    count += 1
 
-                print("{0}: {1}".format(st, message[wrap_status_result['ver_status']]))
                 if not done_wrapping:
                     time.sleep(10)
 
-        if done_wrapping:
+        if wrap_status_result['ver_status'] in [1, 3, 4]:
             return {'status': 200, 'result': message[wrap_status_result['ver_status']]}
         else:
-            return {'status': 500, 'result': message[wrap_status_result['ver_status']]}
+            return {'status': 500, 'result': wrap_status_result}
+
+    def unwrap(self, app_psk, version_psk):
+        url = '{}/policies/dynamic/policy/version/{}'.format(self.region['Python Web Services'], version_psk)
+        response = self.app_obj.session.get(url)
+        if len(response['policies']) != 0:
+            policy_psk = response['policies'][0]['psk']
+
+            self.session['params'].update({
+                'appPsk': app_psk,
+                'dynamicPolicyInfo': {
+                    'action': 'delete',
+                    'policy_data': {
+                        'versionpsk': version_psk,
+                        'policy_psk': policy_psk}
+                },
+                'pythonAuthToken': self.session['params']['token']
+            })
+
+            self.payload['method'] = 'com.apperian.eas.apps.unwrapapp'
+            self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
 
     @staticmethod
     def convert_policies(policies):
