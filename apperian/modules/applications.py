@@ -276,8 +276,8 @@ class Apps:
                 status = resp['result']['version']['signing_status']
                 if status == 'in_progress':
                     ts = time.time()
-                    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-                    print "{}: Signing in progress...".format(st)
+                    st = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+                    print "{} - Signing in progress...".format(st)
                     time.sleep(10)
                 else:
                     done_signing = True
