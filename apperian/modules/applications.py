@@ -1,5 +1,7 @@
 # coding=utf-8
 import json
+import time
+import datetime
 import publishing
 from helpers import response_check, display_options
 
@@ -252,7 +254,7 @@ class Apps:
             resp['result'] = choice['psk']
         return resp
 
-    def sign(self, app_psk, cred_psk):
+    def sign(self, app_psk, cred_psk, async=False):
         """
         PUT /applications/<app_psk>/credentials/<credentials_psk>
         Signs an iOS or Android application using signing credentials that were previously stored in EASE for the
@@ -260,18 +262,37 @@ class Apps:
 
         :param app_psk: Unique ID for the App
         :param cred_psk: Unique ID for the credentials
+        :param async: Optional. If passed, the sign call will be asyncronous and will not wait for the job to complete
+        before returning
         :return: dict of Signing Status
         """
         url = '{}/{}/credentials/{}'.format(self.base, app_psk, cred_psk)
         r = self.session.put(url)
-        result = response_check(r, 'signing_status')
-        return result
+        resp = response_check(r, 'signing_status')
+        if not async:
+            done_signing = False
+            while not done_signing:
+                resp = Apps.get_details(self, app_psk)
+                status = resp['result']['version']['signing_status']
+                if status == 'in_progress':
+                    ts = time.time()
+                    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+                    print "{}: Signing in progress...".format(st)
+                    time.sleep(10)
+                else:
+                    done_signing = True
+                    print 'Signing finished - {}'.format(status)
+                    if status != 'signed':
+                        resp['status'] = 500
+                    resp['result'] = resp['result']['version']['signing_status_details']
+
+        return resp
 
     def update(self, app_psk, metadata, file_name=False):
         """
-        :param app_psk:
-        :param metadata
-        :param file_name:
+        :param app_psk: Unique ID for the app from publish.get_list()
+        :param metadata: display metadata for EASE
+        :param file_name: Optional parameter, if none is passed, function will just update metadata
         :return:
         """
         current_data = self.publish.update(app_psk)
