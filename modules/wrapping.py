@@ -2,17 +2,15 @@
 import json
 import time
 import datetime
-from helpers import response_check, php_token
+import bench
 
 
-class Wrapper:
-    def __init__(self, php_session, php_payload, app_obj, region, user_psk):
-        self.session = php_session
-        self.payload = php_payload
-        self.user_psk = user_psk
+class Wrapper(bench.Bench):
+    def __init__(self, region, app_obj):
+        bench.Bench.__init__(self, region)
         self.app_obj = app_obj
         self.region = region
-        self.session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': php_token})
+        self.php_session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': self.php_token})
         # headers['Content-Type'] = 'application/json'
 
     def wrap(self, psk, policies, async=False):
@@ -27,13 +25,13 @@ class Wrapper:
             'data': converted_policies,
             'dynamicPolicyInfo': dynamic_policy_info,
             'apperianWrapperVersion': wrapper_version,
-            'userPsk': self.user_psk,
-            'pythonAuthToken': self.payload['params']['token']
+            'userPsk': self.user_data['user']['psk'],
+            'pythonAuthToken': self.php_payload['params']['token']
         }
         # params['pythonAuthToken'] = web_svc.auth_token
-        self.payload['params'].update(params)
-        self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
-        self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        self.php_payload['params'].update(params)
+        self.php_payload['method'] = 'com.apperian.eas.apps.wrapappasync'
+        self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
 
         message = {
             -1: "Error applying policies",
@@ -77,7 +75,7 @@ class Wrapper:
         if len(response['policies']) != 0:
             policy_psk = response['policies'][0]['psk']
 
-            self.session['params'].update({
+            self.php_session['params'].update({
                 'appPsk': app_psk,
                 'dynamicPolicyInfo': {
                     'action': 'delete',
@@ -85,11 +83,11 @@ class Wrapper:
                         'versionpsk': version_psk,
                         'policy_psk': policy_psk}
                 },
-                'pythonAuthToken': self.session['params']['token']
+                'pythonAuthToken': self.php_session['params']['token']
             })
 
-            self.payload['method'] = 'com.apperian.eas.apps.unwrapapp'
-            self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+            self.php_payload['method'] = 'com.apperian.eas.apps.unwrapapp'
+            self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
 
     @staticmethod
     def convert_policies(policies):
@@ -152,9 +150,9 @@ class Wrapper:
         return policy_list
 
     def gen_dynamic_policy_info(self, policies, app_psk, version_psk):
-        r = self.session.get('{}/policies/dynamic/policy/version/{}'.format(
+        r = self.php_session.get('{}/policies/dynamic/policy/version/{}'.format(
             self.region['PHP Web Services'], version_psk))
-        policy_response = response_check(r)
+        policy_response = Wrapper.response_check(r)
         if policy_response['status'] == 200:
             policy_response = policy_response['result']
 
@@ -538,9 +536,9 @@ class Wrapper:
               "apperian_wrapper_info" => $apperianWrapperInfo}
         """
 
-        self.payload['method'] = 'com.apperian.eas.apps.getversionstatus'
-        self.payload['params'].update({'appPsk': app_psk})
+        self.php_payload['method'] = 'com.apperian.eas.apps.getversionstatus'
+        self.php_payload['params'].update({'appPsk': app_psk})
 
-        resp = self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        resp = response_check(resp, 'result')
+        resp = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
+        resp = Wrapper.response_check(resp, 'result')
         return resp['result']

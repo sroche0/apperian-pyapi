@@ -1,12 +1,11 @@
 # coding=utf-8
 import json
-from helpers import response_check
+import bench
 
 
-class Users:
-    def __init__(self, session, region):
-        self.session = session
-        self.region = region
+class Users(bench.Bench):
+    def __init__(self, region):
+        bench.Bench.__init__(self, region)
 
     def add(self, data):
         """
@@ -16,8 +15,8 @@ class Users:
         :return: A successful response provides a unique key (user_psk) for the user.
         """
         url = '%s/v1/users' % self.region['Python Web Services']
-        r = self.session.post(url, data=json.dumps(data))
-        result = response_check(r, 'user_psk')
+        r = self.py_session.post(url, data=json.dumps(data))
+        result = Users.response_check(r, 'user_psk')
         return result
 
     def info(self, psk):
@@ -29,8 +28,8 @@ class Users:
         :return: Returns a dict with the target user's details
         """
         url = '%s/v1/users/%s' % (self.region['Python Web Services'], psk)
-        r = self.session.get(url)
-        result = response_check(r, 'user')
+        r = self.py_session.get(url)
+        result = Users.response_check(r, 'user')
         return result
 
     def list(self):
@@ -41,8 +40,8 @@ class Users:
         mobile_phone, role, created_date, until_date, disabled_reason, id, last_login_from_catalog
         """
         url = '%s/users' % self.region['Python Web Services']
-        r = self.session.get(url)
-        result = response_check(r, 'users')
+        r = self.py_session.get(url)
+        result = Users.response_check(r, 'users')
         return result
 
     def delete(self, psk):
@@ -54,8 +53,8 @@ class Users:
         :return: returns "ok", "auth", or the error message
         """
         url = '%s/users/%s' % (self.region['Python Web Services'], psk)
-        r = self.session.delete(url)
-        result = response_check(r, 'delete_user_response')
+        r = self.py_session.delete(url)
+        result = Users.response_check(r, 'delete_user_response')
         return result
 
     def update(self, psk, payload):
@@ -70,6 +69,6 @@ class Users:
         :return: Dict with status and result of True/False
         """
         url = '%s/v1/users/%s' % (self.region['Python Web Services'], psk)
-        r = self.session.put(url, data=json.dumps(payload), headers={"Content-Type": "application/json"})
-        result = response_check(r, 'update_user_success')
+        r = self.py_session.put(url, data=json.dumps(payload), headers={"Content-Type": "application/json"})
+        result = Users.response_check(r, 'update_user_success')
         return result

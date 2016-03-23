@@ -1,16 +1,14 @@
 import json
 import logging
 from subprocess import PIPE, Popen
-from helpers import response_check
+import bench
 
 
-class Publish:
-    def __init__(self, php_session, php_payload, py_session, region):
-        self.token, self.transactionID, self.file_id = '', '', ''
-        self.payload = php_payload
-        self.php_session = php_session
-        self.py_session = py_session
-        self.region = region
+class Publish(bench.Bench):
+    def __init__(self, region):
+        bench.Bench.__init__(self, region)
+        self.transactionID = ''
+        self.file_id = ''
 
     def add_new_app(self, file_name, metadata):
         """
@@ -44,9 +42,9 @@ class Publish:
         Uses a token from the auth function
         :return: Returns transaction ID
         """
-        self.payload['method'] = "com.apperian.eas.apps.create"
-        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result', 'transactionID')
+        self.php_payload['method'] = "com.apperian.eas.apps.create"
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
+        result = Publish.response_check(r, 'result', 'transactionID')
 
         return result
 
@@ -70,10 +68,10 @@ class Publish:
         return result
 
     def update(self, app_id):
-        self.payload['method'] = "com.apperian.eas.apps.update"
-        self.payload['params'].update({'appID': app_id})
-        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result')
+        self.php_payload['method'] = "com.apperian.eas.apps.update"
+        self.php_payload['params'].update({'appID': app_id})
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
+        result = Publish.response_check(r, 'result')
         return result
 
     def get_list(self):
@@ -84,9 +82,9 @@ class Publish:
         :return: List of dicts of app metadata. Dict keys are: ID, author, bundleID, longdescription, shortdescription,
             status, type, version, versionNotes
         """
-        self.payload['method'] = "com.apperian.eas.apps.getlist"
-        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result', 'applications')
+        self.php_payload['method'] = "com.apperian.eas.apps.getlist"
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
+        result = Publish.response_check(r, 'result', 'applications')
         return result
 
     def publish(self, metadata, publishing_data):
@@ -94,15 +92,15 @@ class Publish:
         :param metadata: Dict of the metadata that is required to upload to ease
         :param publishing_data: Dict of the params needed to publish
         """
-        self.payload['method'] = 'com.apperian.eas.apps.publish'
-        self.payload['params'].update(
+        self.php_payload['method'] = 'com.apperian.eas.apps.publish'
+        self.php_payload['params'].update(
             {"EASEmetadata": metadata,
              "files": {"application": publishing_data['file_id']},
              "transactionID": publishing_data['transactionID']
              }
         )
-        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result', 'appID')
+        r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.php_payload))
+        result = Publish.response_check(r, 'result', 'appID')
         return result
 
     def get_credentials(self):
@@ -113,7 +111,7 @@ class Publish:
         """
         url = '{}/v1/credentials/'.format(self.region['Python Web Services'])
         r = self.py_session.get(url)
-        result = response_check(r, 'credentials')
+        result = Publish.response_check(r, 'credentials')
         return result
 
     def sign_application(self, app_psk, credentials_psk):
@@ -127,5 +125,5 @@ class Publish:
         url = '{}/v1/applications/{}/credentials/{}'.format(self.region['Python Web Services'],
                                                             app_psk, credentials_psk)
         r = self.py_session.put(url)
-        result = response_check(r, 'signing_status')
+        result = Publish.response_check(r, 'signing_status')
         return result

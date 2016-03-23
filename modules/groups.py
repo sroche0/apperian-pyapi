@@ -1,11 +1,11 @@
 # coding=utf-8
 import json
-from helpers import response_check
+import bench
 
 
-class Groups:
-    def __init__(self, session, region):
-        self.session = session
+class Groups(bench.Bench):
+    def __init__(self, region):
+        bench.Bench.__init__(self, region)
         self.region = region
 
     def list(self):
@@ -18,8 +18,8 @@ class Groups:
         https://apidocs.apperian.com/v1/groups.html
         """
         url = '%s/v1/groups/' % self.region['Python Web Services']
-        r = self.session.get(url)
-        result = response_check(r, 'groups')
+        r = self.py_session.get(url)
+        result = Groups.response_check(r, 'groups')
         return result
 
     def add(self, data):
@@ -33,8 +33,8 @@ class Groups:
         """
         url = '%s/v1/groups/' % self.region['Python Web Services']
         payload = json.dumps(data)
-        r = self.session.post(url, data=payload)
-        result = response_check(r, 'group')
+        r = self.py_session.post(url, data=payload)
+        result = Groups.response_check(r, 'group')
         return result
 
     def list_apps(self, group_psk):
@@ -47,8 +47,8 @@ class Groups:
         https://apidocs.apperian.com/v1/groups.html
         """
         url = '{}/v1/groups/{}'.format(self.region['Python Web Services'], group_psk)
-        r = self.session.get(url)
-        result = response_check(r, 'applications')
+        r = self.py_session.get(url)
+        result = Groups.response_check(r, 'applications')
         return result
 
     def add_apps(self, group_psk, app_list):
@@ -61,8 +61,8 @@ class Groups:
         """
         url = '{}/v1/groups/{}/applications'.format(self.region['Python Web Services'], group_psk)
         payload = json.dumps({"app_psk": app_list})
-        r = self.session.post(url, data=payload)
-        result = response_check(r, 'response')
+        r = self.py_session.post(url, data=payload)
+        result = Groups.response_check(r, 'response')
         return result
 
     def delete_apps(self, group_psk, app_list):
@@ -75,8 +75,8 @@ class Groups:
         """
         url = '{}/v1/groups/{}/applications'.format(self.region['Python Web Services'], group_psk)
         payload = json.dumps({"app_psk": app_list})
-        r = self.session.delete(url, data=payload)
-        result = response_check(r, 'response')
+        r = self.py_session.delete(url, data=payload)
+        result = Groups.response_check(r, 'response')
         return result
 
     def list_members(self, group_psk):
@@ -89,8 +89,8 @@ class Groups:
         https://apidocs.apperian.com/v1/groups.html
         """
         url = '{}/v1/groups/{}/users/'.format(self.region['Python Web Services'], group_psk)
-        r = self.session.get(url)
-        result = response_check(r, 'users_in_group')
+        r = self.py_session.get(url)
+        result = Groups.response_check(r, 'users_in_group')
         return result
 
     def add_member(self, user_psk, groups):
@@ -105,8 +105,8 @@ class Groups:
         """
         url = '{}/v1/groups/users/{}'.format(self.region['Python Web Services'], user_psk)
         payload = json.dumps({"group_psk": groups})
-        r = self.session.get(url, data=payload)
-        result = response_check(r, 'response')
+        r = self.py_session.get(url, data=payload)
+        result = Groups.response_check(r, 'response')
         return result
 
     def add_users(self, users, groups):
@@ -144,8 +144,8 @@ class Groups:
         """
         url = '{}/v1/groups/{}/users'.format(self.region['Python Web Services'], group_psk)
         payload = json.dumps({"user_psk": user_list})
-        r = self.session.get(url, data=payload)
-        result = response_check(r, 'response')
+        r = self.py_session.get(url, data=payload)
+        result = Groups.response_check(r, 'response')
         return result
 
     def remove_members(self, group_psk, user_list):
@@ -158,8 +158,8 @@ class Groups:
         """
         url = '{}/v1/groups/{}/users'.format(self.region['Python Web Services'], group_psk)
         payload = json.dumps({"user_psk": user_list})
-        r = self.session.delete(url, data=payload)
-        result = response_check(r, 'response')
+        r = self.py_session.delete(url, data=payload)
+        result = Groups.response_check(r, 'response')
         return result
 
     def update(self, group_psk, data):
@@ -172,8 +172,8 @@ class Groups:
         """
         url = '{}/v1/groups/{}'.format(self.region['Python Web Services'], group_psk)
         payload = json.dumps({data})
-        r = self.session.put(url, data=payload)
-        result = response_check(r, 'group')
+        r = self.py_session.put(url, data=payload)
+        result = Groups.response_check(r, 'group')
         return result
 
     def delete(self, group_psk):
@@ -184,6 +184,6 @@ class Groups:
         :result: Dict with deleted groups metadata. Dict keys are: psk, name, description
         """
         url = '{}/v1/groups/{}'.format(self.region['Python Web Services'], group_psk)
-        r = self.session.delete(url)
-        result = response_check(r, 'deleted_group')
+        r = self.py_session.delete(url)
+        result = Groups.response_check(r, 'deleted_group')
         return result

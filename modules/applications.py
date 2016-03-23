@@ -3,14 +3,13 @@ import json
 import time
 import datetime
 import publishing
-from helpers import response_check, display_options
+import bench
 
 
-class Apps:
-    def __init__(self, py_session, php_session, php_payload, region):
-        self.session = py_session
-        self.publish = publishing.Publish(php_session, php_payload, py_session, region)
-        self.base = '{}/v1/applications'.format(region['Python Web Services'])
+class Apps(bench.Bench):
+    def __init__(self, region):
+        bench.Bench.__init__(self, region)
+        self.base = '{}/v1/applications'.format(self.region['Python Web Services'])
 
     def list(self):
         """
@@ -21,8 +20,8 @@ class Apps:
         :return: Dict with key:value pairs of the app psk and it's metadata. For example: {123:{METADATA}}
         """
         url = self.base
-        r = self.session.get(url)
-        resp = response_check(r, 'applications')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'applications')
         # if resp['status'] == 200:
         #     app_data = {}
         #     for i in resp['resp']:
@@ -39,8 +38,8 @@ class Apps:
         :return: Returns dict of metadata about the specified application. Specify the app with app_psk.
         """
         url = '{}/{}'.format(self.base, str(psk))
-        r = self.session.get(url)
-        resp = response_check(r, 'application')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'application')
         return resp
 
     def add_screenshot(self, psk, form, slot):
@@ -57,8 +56,8 @@ class Apps:
 
         """
         url = '{}/{}/screenshots/{}/{}'.format(self.base, psk, form, slot)
-        r = self.session.post(url)
-        resp = response_check(r)
+        r = self.py_session.post(url)
+        resp = Apps.response_check(r)
         return resp
 
     def delete_screenshot(self, psk, form, slot):
@@ -76,8 +75,8 @@ class Apps:
 
         """
         url = '{}/{}/screenshots/{}/{}'.format(self.base, psk, form, slot)
-        r = self.session.delete(url)
-        resp = response_check(r)
+        r = self.py_session.delete(url)
+        resp = Apps.response_check(r)
         return resp
 
     def get_media(self, psk):
@@ -89,8 +88,8 @@ class Apps:
         :return: Returns list of media files and their metadata in dicts.
         """
         url = '{}/{}/related_media'.format(self.base, str(psk))
-        r = self.session.get(url)
-        resp = response_check(r, 'related_media')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'related_media')
         return resp
 
     def get_usage(self, psk, start_date, end_date):
@@ -104,8 +103,8 @@ class Apps:
         :return:Returns Download Count and Usage Count for an application during a specified statistical time period.
         """
         url = '{}/{}/stats?start_date={}&end_date={}'.format(self.base, psk, start_date, end_date)
-        r = self.session.get(url)
-        resp = response_check(r, 'app_stats')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'app_stats')
         return resp
 
     def get_versions(self, psk):
@@ -127,8 +126,8 @@ class Apps:
         :return: Returns data about all the App Catalogs in the authenticated user's organization
         """
         url = '{}/app_catalogs/'.format(self.base)
-        r = self.session.get(url)
-        resp = response_check(r, 'app_catalogs')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'app_catalogs')
         if resp['status'] == 200:
             app_data = {}
             for i in resp['data']:
@@ -146,8 +145,8 @@ class Apps:
 
         """
         url = '{}/user'.format(self.base)
-        r = self.session.get(url)
-        resp = response_check(r, 'applications')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'applications')
         if resp['status'] == 200:
             app_data = {}
             for i in resp['result']:
@@ -177,8 +176,8 @@ class Apps:
             elif app_details['operating_system'] == 401:
                 file_name += '.xap'
 
-        dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True)
-        dl = self.session.get(dl_url.url, stream=True)
+        dl_url = self.py_session.get(app_details['direct_download_binary_url'], allow_redirects=True)
+        dl = self.py_session.get(dl_url.url, stream=True)
         # Removed the status bar for now as it seems our fdownload server does not return anything about file size
         # prior to actually downloading the file
 
@@ -219,8 +218,8 @@ class Apps:
         :return: Dict of request status
         """
         url = '{}/{}'.format(self.base, app_psk)
-        r = self.session.put(url, data=json.dumps({'enabled': state}))
-        resp = response_check(r, 'update_application_result')
+        r = self.py_session.put(url, data=json.dumps({'enabled': state}))
+        resp = Apps.response_check(r, 'update_application_result')
         return resp
 
     def delete(self, psk):
@@ -232,8 +231,8 @@ class Apps:
         :return: psk of deleted app on success, dict of error on failure
         """
         url = '{}/{}'.format(self.base, psk)
-        r = self.session.delete(url)
-        resp = response_check(r, 'deleted_application')
+        r = self.py_session.delete(url)
+        resp = Apps.response_check(r, 'deleted_application')
         return resp
 
     def get_credentials(self, show=False):
@@ -247,10 +246,10 @@ class Apps:
         """
         url = '{}credentials'.format(self.base)
         url = url.replace('applications', '')
-        r = self.session.get(url)
-        resp = response_check(r, 'credentials')
+        r = self.py_session.get(url)
+        resp = Apps.response_check(r, 'credentials')
         if show:
-            choice = display_options(resp['result'], 'credential', 'description')
+            choice = Apps.display_options(resp['result'], 'credential', 'description')
             resp['result'] = choice['psk']
         return resp
 
@@ -267,8 +266,8 @@ class Apps:
         :return: dict of Signing Status
         """
         url = '{}/{}/credentials/{}'.format(self.base, app_psk, cred_psk)
-        r = self.session.put(url)
-        resp = response_check(r, 'signing_status')
+        r = self.py_session.put(url)
+        resp = Apps.response_check(r, 'signing_status')
         if not async:
             done_signing = False
             while not done_signing:

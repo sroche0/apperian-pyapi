@@ -1,11 +1,9 @@
 # coding=utf-8
 import json
-import requests
 import os
 import logging
 import pkgutil
-from modules import applications, groups, users, wrapping, publishing
-from modules.helpers import display_options, response_check
+from modules import applications, groups, users, wrapping, publishing, bench
 __author__ = 'Shawn Roche'
 
 ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
@@ -13,27 +11,19 @@ ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
 #     ENDPOINTS = json.load(f)
 
 
-class Client:
+class Client(bench.Bench):
     def __init__(self, user, pw, region='default', verbose=False, php=None, py=None):
+        bench.Bench.__init__(self, region)
         self.verbose = verbose
         log_level = logging.DEBUG if self.verbose else logging.CRITICAL
         logging.basicConfig(format="[%(levelname)8s] %(message)s", level=log_level)
         self.username = user
         self.password = pw
         self.user_data = {}
-        self.region, self.token = region, ''
-        self.user, self.app, self.group, self.wrapper, self.publish = '', '', '', '', ''
-        # Setup python session
+        # self.user, self.app, self.group, self.wrapper, self.publish = '', '', '', '', ''
         self.py = py
-        self.py_session = requests.Session()
-        self.py_session.headers.update({"Content-Type": "application/json"})
-        # Setup php session
         self.php = php
-        self.php_session = requests.Session()
-        self.php_session.headers = {"Content-Type": "application/js"}
-        self.php_payload = {"id": 1, "apiVersion": "1.0", "method": "", "jsonrpc": "2.0"}
-
-        self.valid = Ease.set_region(self, region)
+        self.valid = Client.set_region(self, region)
 
     def auth(self, user=None, password=None):
         """
@@ -56,15 +46,13 @@ class Client:
             logging.debug('Sending auth via {}'.format(url))
         r = self.py_session.post(url, data=payload)
 
-        resp = response_check(r)
+        resp = Client.response_check(r)
 
         if resp['status'] == 200:
             self.token = resp['result']['token']
             self.user_data = resp['result']
-            self.py_session.headers.update({'X-TOKEN': self.token})
-            self.php_payload["params"] = {"token": self.token}
-            Ease.connectors(self)
-            return resp['result']['token']
+            Client.update_connectors(self)
+            return True
         else:
             if self.verbose:
                 logging.debug('Auth failed\n{}'.format(r.text))
@@ -91,9 +79,10 @@ class Client:
             else:
                 if region != 'list':
                     print "%s is not a valid format. Please make a selection from below:" % region
-                self.region = display_options(ENDPOINTS, 'region')
+                self.region = Client.display_options(ENDPOINTS, 'region')
 
-        return Ease.auth(self)
+        Client.init_connectors(self)
+        return Client.auth(self)
 
     def set_default_region(self):
         """
@@ -105,22 +94,32 @@ class Client:
         You are about to change the default region this module uses for all future sessions.
         Make a selection from one of the below regions:
         """
-        ENDPOINTS['default'] = display_options(ENDPOINTS, 'region')
+        ENDPOINTS['default'] = Client.display_options(ENDPOINTS, 'region')
         self.region = ENDPOINTS['default']
-        Ease.auth(self, self.username, self.password)
+        Client.auth(self, self.username, self.password)
 
         package_dir, package = os.path.split(__file__)
         data_path = os.path.join(package_dir, 'data', 'endpoints.json')
         with open(data_path, 'wb') as f:
             f.write(json.dumps(ENDPOINTS, indent=4, separators=(',', ': ')))
 
-    def connectors(self):
-        self.app = applications.Apps(self.py_session, self.php_session, self.php_payload, self.region)
-        self.group = groups.Groups(self.py_session, self.region)
-        self.user = users.Users(self.py_session, self.region)
-        self.wrapper = wrapping.Wrapper(self.php_session, self.php_payload, self.app, self.region,
-                                        self.user_data['user']['psk'])
-        self.publish = publishing.Publish(self.php_session, self.php_payload, self.py_session, self.region)
+    def init_connectors(self):
+        self.app = applications.Apps(self.region)
+        self.group = groups.Groups(self.region)
+        self.user = users.Users(self.region)
+        self.publish = publishing.Publish(self.region)
+        self.wrapper = wrapping.Wrapper(self.region, self.app)
+
+    def update_connectors(self):
+        for module in [self.app, self.group, self.user, self.publish]:
+            module.user_data = self.user_data
+            module.token = self.token
+            module.py_session.headers.update({'X-TOKEN': self.token})
+            module.php_payload["params"] = {"token": self.token}
+
+        # Update app_obj in self.wrapper now that it has proper auth
+        self.app.publish = self.publish
+        self.wrapper.app_obj = self.app
 
     ######################################
     # Org Functions
@@ -133,5 +132,5 @@ class Client:
         """
         url = '%s/organizations/%s' % (self.region['Python Web Services'], psk)
         r = self.py_session.delete(url)
-        result = response_check(r, 'deleted_organization')
+        result = Client.response_check(r, 'deleted_organization')
         return result
