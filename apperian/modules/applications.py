@@ -1,5 +1,7 @@
 # coding=utf-8
 import json
+import time
+import datetime
 import publishing
 from helpers import response_check, display_options
 
@@ -153,16 +155,59 @@ class Apps:
             resp['result'] = app_data
         return resp
 
-    def download(self, psk, path=False):
+    def download(self, psk, file_name=False, status=False):
         """
         GET /downloads/direct/applications/<app_id>
         Download the Application's Binary File
 
         :param psk: Unique ID of the app. Returned by list() or get_details() as "direct_download_binary_url"
-        :param path: Path to save file to. If not passed, file will save in CWD with default filename
+        :param file_name: Path to save file to. If not passed, file will save in CWD with default filename
+        :param status: Boolean that controls whether or not the download shows a status bar
         :return: True False for download success/
         """
-        pass
+        app_details = Apps.get_details(self, psk)['result']
+        if not file_name:
+            file_name = app_details['name'].replace(' ', '_')
+            if app_details['operating_system'] == 1:
+                file_name += '.ipa'
+            elif app_details['operating_system'] in [102, 103, 104, 105]:
+                file_name += '.apk'
+            elif app_details['operating_system'] in [205, 206, 207]:
+                file_name += '.zip'
+            elif app_details['operating_system'] == 401:
+                file_name += '.xap'
+
+        dl_url = self.session.get(app_details['direct_download_binary_url'], allow_redirects=True)
+        dl = self.session.get(dl_url.url, stream=True)
+        # Removed the status bar for now as it seems our fdownload server does not return anything about file size
+        # prior to actually downloading the file
+
+        # if status:
+        #     file_size = int(dl.headers["content-length"])
+        #     file_size_dl = 0
+        #     last = 0
+        #     print '-' * (len(file_name) + 24)
+        #     print file_name, '   '
+
+        with open(file_name, 'wb') as f:
+            for chunk in dl.iter_content(4096):
+                f.write(chunk)
+                # if status:
+                #     file_size_dl += 4096
+                #     dl_status = int(float(file_size_dl) / float(file_size) * 100)
+                #     if dl_status % 5 == 0:
+                #         if dl_status != last:
+                #             sys.stdout.write('#')
+                #             sys.stdout.flush()
+                #             last = int(dl_status)
+
+        result = {'status': dl.status_code}
+        if dl.status_code == 200:
+            result['result'] = file_name
+        else:
+            result['result'] = 'Failed'
+
+        return result
 
     def toggle(self, app_psk, state):
         """
@@ -175,7 +220,7 @@ class Apps:
         """
         url = '{}/{}'.format(self.base, app_psk)
         r = self.session.put(url, data=json.dumps({'enabled': state}))
-        resp = response_check(r, 'update_application_resp')
+        resp = response_check(r, 'update_application_result')
         return resp
 
     def delete(self, psk):
@@ -209,7 +254,7 @@ class Apps:
             resp['result'] = choice['psk']
         return resp
 
-    def sign(self, app_psk, cred_psk):
+    def sign(self, app_psk, cred_psk, async=False):
         """
         PUT /applications/<app_psk>/credentials/<credentials_psk>
         Signs an iOS or Android application using signing credentials that were previously stored in EASE for the
@@ -217,9 +262,64 @@ class Apps:
 
         :param app_psk: Unique ID for the App
         :param cred_psk: Unique ID for the credentials
+        :param async: Optional. If passed, the sign call will be asyncronous and will not wait for the job to complete
+        before returning
         :return: dict of Signing Status
         """
         url = '{}/{}/credentials/{}'.format(self.base, app_psk, cred_psk)
         r = self.session.put(url)
-        result = response_check(r, 'signing_status')
-        return result
+        resp = response_check(r, 'signing_status')
+        if not async:
+            done_signing = False
+            while not done_signing:
+                resp = Apps.get_details(self, app_psk)
+                status = resp['result']['version']['signing_status']
+                if status == 'in_progress':
+                    ts = time.time()
+                    st = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+                    print "{} - Signing in progress...".format(st)
+                    time.sleep(10)
+                else:
+                    done_signing = True
+                    print 'Signing finished - {}'.format(status)
+                    if status != 'signed':
+                        resp['status'] = 500
+                    resp['result'] = resp['result']['version']['signing_status_details']
+
+        return resp
+
+    def update(self, app_psk, metadata, file_name=False):
+        """
+        :param app_psk: Unique ID for the app from publish.get_list()
+        :param metadata: display metadata for EASE
+        :param file_name: Optional parameter, if none is passed, function will just update metadata
+        :return:
+        """
+        current_data = self.publish.update(app_psk)
+        if current_data['status'] != 200:
+            return current_data
+        data = current_data['result']
+
+        if file_name:
+            transaction_id = data.get('transactionID')
+            if not transaction_id:
+                return data
+            data['file_name'] = file_name
+            file_id = self.publish.upload(data)
+            if file_id['status'] == 200:
+                data['file_id'] = file_id['result']
+            else:
+                return file_id
+        if not metadata:
+            metadata = data['EASEmetadata']
+        pub = self.publish.publish(metadata, data)
+        return pub
+
+    def upload(self, file_path, metadata):
+        """
+        :param file_path: path to the file to upload on local disk
+        :param metadata: required metadata for upload
+        :return:
+        """
+        upload_status = self.publish.add_new_app(file_path, metadata)
+        return upload_status

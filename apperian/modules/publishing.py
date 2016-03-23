@@ -1,11 +1,12 @@
 import json
+import logging
 from subprocess import PIPE, Popen
 from helpers import response_check
 
 
 class Publish:
     def __init__(self, php_session, php_payload, py_session, region):
-        self.token, self.trans_id, self.file_id = '', '', ''
+        self.token, self.transactionID, self.file_id = '', '', ''
         self.payload = php_payload
         self.php_session = php_session
         self.py_session = py_session
@@ -26,7 +27,7 @@ class Publish:
         pub_data = dict(file_name=file_name)
         transaction_id = Publish.create(self)
         if transaction_id['status'] == 200:
-            pub_data['trans_id'] = transaction_id['result']
+            pub_data['transactionID'] = transaction_id['result']
             file_id = Publish.upload(self, pub_data)
             if file_id['status'] == 200:
                 pub_data['file_id'] = file_id['result']
@@ -36,61 +37,6 @@ class Publish:
                 return file_id
         else:
             return transaction_id
-
-    # def update_app(self, app_id):
-    #     app_list = Publish.get_list(self)
-    #     for k, v in app_list.iteritems():
-    #         if i['ID'] ==
-    #     data = {'app_id': app_list[app_id]}
-    #
-    #     pass
-    #
-    # def auth(self, user=None, password=None):
-    #     """
-    #     :param user: Admin username
-    #     :param password: Admin password
-    #     :return: Boolean
-    #     """
-    #     if user:
-    #         self.username = user
-    #     if password:
-    #         self.password = password
-    #
-    #     self.payload['method'] = "com.apperian.eas.user.authenticateuser"
-    #     self.payload['params'] = {"email": self.username, "password": self.password}
-    #
-    #     r = self.s.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-    #     result = response_check(r, 'result', 'token')
-    #     if result.get('result'):
-    #         try:
-    #             self.token = str(result['result'].encode('ascii'))
-    #             result = result['result']
-    #         except AttributeError:
-    #             result = False
-    #     else:
-    #         result = False
-    #
-    #     self.payload["params"] = {"token": self.token}
-    #
-    #     return result
-    #
-    # def set_region(self, region='default'):
-    #     """
-    #     Change the region you access for this session and authenticates you to the new environment.
-    #     If 'list' is provided as the value for region you will see a list of options to manually choose from.
-    #
-    #     :param region: Optional. Provide alternate region string. Use region='list' to manually select one
-    #     """
-    #     key = ENDPOINTS.get(region)
-    #     if key:
-    #         self.region = key
-    #     else:
-    #         if region != 'list':
-    #             print "%s is not a valid region. Please make a selection from below:" % region
-    #         choice = display_options(ENDPOINTS.keys(), 'region')
-    #         self.region = ENDPOINTS[choice]
-    #
-    #     return Publish.auth(self)
 
     def create(self):
         """
@@ -106,18 +52,19 @@ class Publish:
 
     def upload(self, data):
         """
-        :param data: Dict with the file anme and transaction ID. Dict keys are: file_name, trans_id
+        :param data: Dict with the file anme and transaction ID. Dict keys are: file_name, transactionID
         :return: returns fileID for the publish step
         """
         result = {}
-        url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['trans_id'])
+        url = '{}/upload?transactionID={}'.format(self.region['File Uploader'], data['transactionID'])
         file_id, err = Popen(['curl', '--form', 'LUuploadFile=@{}'.format(data['file_name']), url],
                              stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
         try:
             result['result'] = json.loads(file_id)['fileID']
             result['status'] = 200
-        except KeyError or ValueError:
-            result['status'] = err
+        except (KeyError, ValueError):
+            result['status'] = 500
+            logging.debug([file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)])
             result['result'] = [file_id, 'curl --form', 'LUuploadFile=@{} {}'.format(data['file_name'], url)]
 
         return result
@@ -151,11 +98,11 @@ class Publish:
         self.payload['params'].update(
             {"EASEmetadata": metadata,
              "files": {"application": publishing_data['file_id']},
-             "transactionID": publishing_data['trans_id']
+             "transactionID": publishing_data['transactionID']
              }
         )
         r = self.php_session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
-        result = response_check(r, 'result')
+        result = response_check(r, 'result', 'appID')
         return result
 
     def get_credentials(self):

@@ -1,5 +1,7 @@
 # coding=utf-8
 import json
+import time
+import datetime
 from helpers import response_check, php_token
 
 
@@ -10,16 +12,15 @@ class Wrapper:
         self.user_psk = user_psk
         self.app_obj = app_obj
         self.region = region
-        self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
         self.session.headers.update({'X-Ds-Client-Type': 9, 'X-HTTP-Token': php_token})
         # headers['Content-Type'] = 'application/json'
 
-    def wrap_app(self, policies, psk):
+    def wrap(self, psk, policies, async=False):
         resp = self.app_obj.get_details(psk)
         version_psk = resp['result']['version']['psk']
         converted_policies = Wrapper.convert_policies(policies)
         dynamic_policy_info = Wrapper.gen_dynamic_policy_info(self, converted_policies, psk, version_psk)
-        wrapper_status = Wrapper.get_wrapping_status(self, psk)
+        wrapper_status = Wrapper.get_status(self, psk)
         wrapper_version = wrapper_status['apperian_wrapper_info']['wrapper_version']
         params = {
             'appPsk': psk,
@@ -31,8 +32,64 @@ class Wrapper:
         }
         # params['pythonAuthToken'] = web_svc.auth_token
         self.payload['params'].update(params)
+        self.payload['method'] = 'com.apperian.eas.apps.wrapappasync'
+        self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
 
-        return self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
+        message = {
+            -1: "Error applying policies",
+            0: "Wrapping completed, no policies applied",
+            1: "Policies applied",
+            2: "Wrapping in progress...",
+            3: "Wrapping completed, pending signing",
+            4: "Wrapping completed, no policies applied"}
+
+        done_wrapping = False
+        count = 1
+        while not done_wrapping and count < 3:
+            if async:
+                wrap_status_result = Wrapper.get_status(self, psk)
+                if wrap_status_result['ver_status'] not in [0, 4]:
+                    done_wrapping = True
+                else:
+                    break
+            else:
+                wrap_status_result = Wrapper.get_status(self, psk)
+                ts = time.time()
+                st = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+                if wrap_status_result['ver_status'] in [1, 2]:
+                    print("{0} - {1}".format(st, message[wrap_status_result['ver_status']]))
+                elif wrap_status_result['ver_status'] in [3, -1]:
+                    done_wrapping = True
+                else:
+                    count += 1
+
+                if not done_wrapping:
+                    time.sleep(10)
+
+        if wrap_status_result['ver_status'] in [1, 3, 4]:
+            return {'status': 200, 'result': message[wrap_status_result['ver_status']]}
+        else:
+            return {'status': 500, 'result': wrap_status_result}
+
+    def unwrap(self, app_psk, version_psk):
+        url = '{}/policies/dynamic/policy/version/{}'.format(self.region['Python Web Services'], version_psk)
+        response = self.app_obj.session.get(url)
+        if len(response['policies']) != 0:
+            policy_psk = response['policies'][0]['psk']
+
+            self.session['params'].update({
+                'appPsk': app_psk,
+                'dynamicPolicyInfo': {
+                    'action': 'delete',
+                    'policy_data': {
+                        'versionpsk': version_psk,
+                        'policy_psk': policy_psk}
+                },
+                'pythonAuthToken': self.session['params']['token']
+            })
+
+            self.payload['method'] = 'com.apperian.eas.apps.unwrapapp'
+            self.session.post(self.region['PHP Web Services'], data=json.dumps(self.payload))
 
     @staticmethod
     def convert_policies(policies):
@@ -388,9 +445,12 @@ class Wrapper:
             # If com.apperian.application.version is undefined, this is an older version of the wrapper which doesn't
             # have the version_psk baked in. Therefore, we use what the system has. If the app has the version psk
             # baked in, always use that because it's always accurate.
-            operation_pattern = "((typeof(facts['com.apperian.application.version']) === 'undefined' \
-                                && facts['com.apperian.apps.installedversion'] !== -1 && facts['com.apperian.apps.latestversion'] > facts['com.apperian.apps.installedversion'])\
-                                || (facts['com.apperian.apps.latestversion'] > facts['com.apperian.application.version']))"
+            operation_pattern = "((typeof(facts['com.apperian.application.version']) === 'undefined' && " \
+                                "facts['com.apperian.apps.installedversion'] !== -1 && " \
+                                "facts['com.apperian.apps.latestversion'] > " \
+                                "facts['com.apperian.apps.installedversion']) || " \
+                                "(facts['com.apperian.apps.latestversion'] > " \
+                                "facts['com.apperian.application.version']))"
             actions_fail = [{"id": '{0}keepcalmandcarryon.lol'.format(action_prefix), "params": ''}]
             actions_success = [{"id": '{0}update'.format(action_prefix), "params": ''}]
             versioncontrol_rule = {"name": rule_names['versioncontrol'], "operationpattern": operation_pattern,
@@ -465,7 +525,7 @@ class Wrapper:
             policy_op_pattern += '"' + rules[i]['name'] + '"'
         return policy_op_pattern
 
-    def get_wrapping_status(self, app_psk):
+    def get_status(self, app_psk):
         """
         :param app_psk:
         :return:
