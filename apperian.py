@@ -13,7 +13,7 @@ ENDPOINTS = json.loads(pkgutil.get_data('apperian', 'endpoints.json'))
 #     ENDPOINTS = json.load(f)
 
 
-class Ease:
+class Client:
     def __init__(self, user, pw, region='default', verbose=False, php=None, py=None):
         self.verbose = verbose
         log_level = logging.DEBUG if self.verbose else logging.CRITICAL
