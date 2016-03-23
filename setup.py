@@ -25,7 +25,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='1.0',
 
-    description='Python module for interacting with the EASE APIs',
+    description='Python module for interacting with the Apperian EASE APIs',
     long_description=long_description,
 
     # The project's main homepage.
@@ -85,7 +85,7 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'apperian': ['modules/*.py', 'endpoints.json'],
+        'modules': ['*.py'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
