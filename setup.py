@@ -46,7 +46,7 @@ setup(
     # simple. Or you can use find_packages().
     # packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     # packages=find_packages(),
-    packages=['apperian', 'modules', 'endpoints'],
+    packages=['apperian', 'apperian/modules', 'endpoints'],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
@@ -61,14 +61,14 @@ setup(
     extras_require={
         'dev': ['check-manifest'],
         'test': ['coverage'],
-    },
+    }
 
     # If there are modules files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_data={
-        'apperian': 'apperian',
-        'modules': 'apperian/modules/*.py',
-        'endpoints': 'endpoints.json'
-    }
+#     package_data={
+#         'apperian': 'apperian',
+#         'modules': 'apperian/modules/*.py',
+#         'endpoints': 'endpoints.json'
+#     }
 )
